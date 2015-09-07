@@ -1,0 +1,45 @@
+<h2><%= t("moderation.comments.index.title") %></h2>
+
+<%= render 'shared/filter_subnav', i18n_namespace: "moderation.comments.index" %>
+
+<h3><%= page_entries_info @comments %></h3>
+
+<table>
+  <tr>
+    <th>
+      <%= t("moderation.comments.index.headers.commentable") %>&nbsp;|&nbsp;
+      <%= t("moderation.comments.index.headers.commentable_type") %>&nbsp;|&nbsp;
+      <%= t("moderation.comments.index.headers.updated_at") %>
+    </th>
+    <th><%= t("moderation.comments.index.headers.comment") %></th>
+    <th class="text-center"><%= t("moderation.comments.index.headers.flags") %></th>
+    <th class="text-center" colspan="2"><%= t("moderation.debates.index.headers.actions") %></th>
+  </tr>
+  <% @comments.each do |comment| %>
+    <tr id="comment_<%= comment.id %>">
+      <td>
+        <%= link_to comment.commentable.title, comment.commentable %>
+        <br>
+        <%= comment.commentable_type.constantize.model_name.human %>
+        <span class="date"><%= l comment.updated_at.to_date %></span>
+      </td>
+      <td><%= comment.body %></td>
+      <td class="text-center"><%= comment.flags_count %></td>
+      <td>
+        <%= link_to t("moderation.comments.index.hide"), hide_in_moderation_screen_moderation_comment_path(comment, request.query_parameters), method: :put, class: "delete" %>
+      </td>
+      <% if can? :ignore_flag, comment %>
+        <td>
+          <%= link_to t("moderation.comments.index.ignore_flag"), ignore_flag_moderation_comment_path(comment, request.query_parameters), method: :put, class: "button radius tiny warning" %>
+        </td>
+      <% end %>
+      <% if comment.ignored_flag? %>
+        <td class="ignored">
+          <%= t("moderation.comments.index.ignored_flag") %>
+        </td>
+      <% end %>
+    </tr>
+  <% end %>
+</table>
+
+<%= paginate @comments %>

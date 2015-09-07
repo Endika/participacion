@@ -1,0 +1,28 @@
+<h2><%= t("admin.debates.index.title") %></h2>
+
+<%= render 'shared/filter_subnav', i18n_namespace: "admin.debates.index" %>
+
+<h3><%= page_entries_info @debates %></h3>
+
+<ul class="admin-list">
+  <% @debates.each do |debate| %>
+    <li id="<%= dom_id(debate) %>">
+      <%= link_to debate.title, debate_path(debate) %>
+
+      <%= link_to t("admin.actions.restore"),
+            restore_admin_debate_path(debate, request.query_parameters),
+            method: :put,
+            data: { confirm: t("admin.actions.confirm") },
+            class: "button radius tiny success right" %>
+
+      <% unless debate.confirmed_hide? %>
+        <%= link_to t("admin.actions.confirm_hide"),
+              confirm_hide_admin_debate_path(debate, request.query_parameters),
+              method: :put,
+              class: "button radius tiny warning right" %>
+      <% end %>
+    </li>
+  <% end %>
+</ul>
+
+<%= paginate @debates %>

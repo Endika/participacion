@@ -1,0 +1,46 @@
+<div class="verification account row">
+  <div class="small-12 column">
+    <div class="text-center">
+
+      <div class="small-4 column verification-step completed">
+        <%= t("verification.step_1") %>
+      </div>
+      <div class="small-4 column verification-step active">
+        <%= t("verification.step_2") %>
+      </div>
+      <div class="small-4 column verification-step">
+        <%= t("verification.step_3") %>
+      </div>
+    </div>
+
+    <div class="progress small-12 success round">
+      <span class="meter" style="width: 66%"></span>
+    </div>
+
+    <%= link_to account_path, class: "left back clear" do %>
+      <i class="icon-angle-left left"></i>
+      <%= t("verification.back") %>
+    <% end %>
+
+    <h1><%= t("verification.sms.edit.title") %></h1>
+
+    <%= form_for @sms, as: "sms", url: sms_path, method: :put do |f| %>
+      <% if @error %>
+        <div data-alert class="alert-box alert radius">
+          <a href="#" class="close">&times;</a>
+          <%= @error %>
+        </div>
+      <% end %>
+
+      <div class="small-12 medium-6">
+        <%= f.label t("verification.sms.edit.confirmation_code") %>
+        <%= f.text_field :confirmation_code, label: false %>
+      </div>
+
+      <%= f.submit t("verification.sms.edit.submit_button") %>
+    <% end %>
+
+    <%= t("verification.sms.edit.resend_sms_text") %>
+    <%= link_to t("verification.sms.edit.resend_sms_link"), verified_user_path %>
+  </div>
+</div>

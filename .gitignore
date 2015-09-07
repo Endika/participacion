@@ -19,3 +19,12 @@
 /spec/examples.txt
 /config/database.yml
 /config/secrets.yml
+/config/deploy-secrets.yml
+
+/coverage
+
+/config/beta-testers.txt
+
+# Mac finder artifacts
+.DS_Store
+.ruby-gemset

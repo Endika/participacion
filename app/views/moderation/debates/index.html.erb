@@ -1,0 +1,44 @@
+<h2><%= t("moderation.debates.index.title") %></h2>
+
+<%= render 'shared/filter_subnav', i18n_namespace: "moderation.debates.index" %>
+
+<h3><%= page_entries_info @debates %></h3>
+
+<table>
+  <tr>
+    <th>
+      <%= t("moderation.debates.index.headers.title") %>&nbsp;|&nbsp;
+      <%= t("moderation.debates.index.headers.updated_at") %>&nbsp;|&nbsp;
+      <%= t("moderation.debates.index.headers.description") %>
+    </th>
+    <th class="text-center"><%= t("moderation.debates.index.headers.flags") %></th>
+    <th class="text-center" colspan="2"><%= t("moderation.debates.index.headers.actions") %></th>
+  </tr>
+  <% @debates.each do |debate| %>
+    <tr id="debate_<%= debate.id %>">
+      <td>
+        <%= link_to debate.title, debate, target: "_blank" %>
+        <br>
+        <span class="date"><%= l debate.updated_at.to_date %></span>
+        <br>
+        <%= debate.description %>
+      </td>
+      <td class="text-center"><%= debate.flags_count %></td>
+      <td>
+        <%= link_to t("moderation.debates.index.hide"), hide_in_moderation_screen_moderation_debate_path(debate, request.query_parameters), method: :put, class: "delete" %>
+      </td>
+      <% if can? :ignore_flag, debate %>
+        <td>
+          <%= link_to t("moderation.debates.index.ignore_flag"), ignore_flag_moderation_debate_path(debate, request.query_parameters), method: :put, class: "button radius tiny warning" %>
+        </td>
+      <% end %>
+      <% if debate.ignored_flag? %>
+        <td class="ignored">
+          <%= t("moderation.debates.index.ignored_flag") %>
+        </td>
+      <% end %>
+    </tr>
+  <% end %>
+</table>
+
+<%= paginate @debates %>

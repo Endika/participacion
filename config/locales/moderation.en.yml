@@ -1,0 +1,42 @@
+en:
+  moderation:
+    menu:
+      flagged_debates: Debates
+      flagged_comments: Comments
+    dashboard:
+      index:
+        title: Moderation
+    comments:
+      index:
+        title: Comments flagged as inappropriate
+        headers:
+          flags: Flags
+          updated_at: Date
+          commentable_type: Type
+          commentable: Root
+          comment: Comment
+        hide: Hide
+        ignore_flag: Ignore
+        ignored_flag: Ignored
+        filter: Filter
+        filters:
+          all: All
+          pending_flag_review: Pending
+          with_ignored_flag: Ignored
+    debates:
+      index:
+        title: Debates flagged as inappropriate
+        headers:
+          flags: Flags
+          updated_at: Date
+          title: Title
+          description: Description
+          actions: Actions
+        hide: Hide
+        ignore_flag: Ignore
+        ignored_flag: Ignored
+        filter: Filter
+        filters:
+          all: All
+          pending_flag_review: Pending
+          with_ignored_flag: Ignored

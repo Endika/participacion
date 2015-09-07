@@ -1,11 +1,11 @@
-<h2><%= t("devise_views.unlocks.new.title") %></h2>
+<h1 class="text-center"><%= t("devise_views.unlocks.new.title") %></h1>
 
 <%= form_for(resource, as: resource_name, url: unlock_path(resource_name), html: { method: :post }) do |f| %>
-  <%= devise_error_messages! %>
+  <%= render 'shared/errors', resource: resource %>
 
   <div class="field">
-    <%= f.label :email, t("devise_views.unlocks.new.email_label") %><br />
-    <%= f.email_field :email, autofocus: true %>
+    <%= f.email_field :email, autofocus: true,
+                      label: t("devise_views.unlocks.new.email_label") %>
   </div>
 
   <div class="actions">

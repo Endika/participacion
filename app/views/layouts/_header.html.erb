@@ -1,45 +1,86 @@
 <header class="<%= header_css %>">
-	<section class="top-links">
-		<div class="row">
-			<div class="small-12 column">
-				<div class="right">
-					<a href="#"><%= t("layouts.header.external_link_transparency") %></a> | <a href="#"><%= t("layouts.header.external_link_opendata") %></a>
-				</div>
-			</div>
-		</div>
-	</section>
+  <section class="top-links show-for-medium-up">
+    <div class="row">
+      <%= render "shared/locale_switcher" %>
+      <div class="external-links">
+        <%= link_to t("layouts.header.participation"), root_path, class: ("selected" unless current_page?("/transparency") || current_page?("/opendata")) %>&nbsp;|
+        <%= link_to t("layouts.header.external_link_transparency"), "/transparency", class: ("selected" if current_page?("/transparency")) %>&nbsp;|
+        <%= link_to t("layouts.header.external_link_opendata"), "/opendata", class: ("selected" if current_page?("/opendata")) %>
+      </div>
+    </div>
+  </section>
 
-	<div class="contain-to-grid">
-		<nav class="top-bar" data-topbar role="navigation">
-			<ul class="title-area">
-				<li class="name">
-					<%= link_to root_path do %>
-						<%= image_tag('header_logo_madrid.png', class: 'left', size: '96x96') %>
-						<%= t("layouts.header.open_gov", open: "<strong>#{t('layouts.header.open')}</strong>").html_safe %> | <span><%= t("layouts.header.participation") %></span>
-					<% end %>
-				</li>
-				<li class="toggle-topbar menu-icon"><a href="#"><span><%= t("layouts.header.menu") %></span></a></li>
-			</ul>
+  <div class="contain-to-grid clear">
+    <nav class="top-bar" data-topbar role="navigation">
+      <ul class="title-area">
+        <li class="toggle-topbar menu-icon"><a href="#"><span></span></a></li>
+        <li class="name">
+          <%= link_to root_path do %>
+            <%= image_tag('header_logo_madrid.png', class: 'left', size: '96x96') %>
+            <%= t("layouts.header.open_gov", open: "#{t('layouts.header.open')}").html_safe %> <span>|</span> <span class="logo-site"><%= t("layouts.header.participation") %></span>
+          <% end %>
+        </li>
+      </ul>
 
-			<section class="top-bar-section">
-				<%= render 'devise/menu/login_items' %>
+      <section class="top-bar-section">
+        <%= render "devise/menu/login_items" %>
+        <%= render "shared/admin_login_items" %>
+      </section>
 
-				<% if user_signed_in? %>
-				<ul class="right">
-					<li><%= link_to(t("layouts.header.my_account_link"), account_path) %></li>
-				</ul>
-				<% end %>
-			</section>
-		</nav>
-	</div>
+      <section class="subnavigation row text-center">
+        <%#= link_to t("layouts.header.welcome"), root_path %>
+        <%#= link_to t("layouts.header.initiatives"), "#" %>
+        <%= link_to t("layouts.header.debates"), debates_path, class: ("active" if current_page?(controller: "/debates")) %><%= link_to t("layouts.header.more_information"), "/more_information", class: ("active" if current_page?("/more_information"))  %><%= link_to t("layouts.header.external_link_blog"), t("layouts.header.external_link_blog_url"), target: "_blank" %>
+      </section>
+    </nav>
+  </div>
 
-	<% if home_page? %>
-		<div class="row">
-			<div class="small-12 column text-center">
-				<h1><%= t("layouts.header.open_city") %></h1>
-				<h2><%= t("layouts.header.open_city_slogan") %></h2>
-				<%= link_to t("layouts.header.create_debate"), new_debate_path, class: 'button radius' %>
-			</div>
-		</div>
-	<% end %>
+  <% if home_page? %>
+    <div class="row home-page">
+      <div class="small-12 column text-center">
+        <h1><%= t("layouts.header.open_city_title") %></h1>
+        <div class="small-12 medium-10 column small-centered">
+          <p><%= t("layouts.header.open_city_slogan") %></p>
+        </div>
+        <div class="small-12 medium-10 column small-centered">
+          <p><%= t("layouts.header.open_city_text") %></p>
+        </div>
+        <p><%= t("layouts.header.open_city_soon") %></p>
+        <%= link_to t("layouts.header.see_all_debates"), debates_path, class: "button radius" %>
+      </div>
+    </div>
+  <% end %>
+
+  <% if transparency_page? %>
+    <div class="row home-page">
+      <div class="small-12 column text-center">
+        <h1><%= t("pages.transparency") %></h1>
+
+      <div class="small-12 medium-10 column small-centered">
+        <p>Estamos trabajando en el nuevo Portal de Transparencia del Ayuntamiento de Madrid, para que no quede ni una esquina del Ayuntamiento que no puedas ver.</p>
+
+        <p>Por ahora puedes visitar el portal que existía hasta ahora:</p>
+
+        <%= link_to "Ir al Portal de Transparencia", t("layouts.header.external_link_transparency_url"), target: "_blank", class: "button radius" %>
+
+        <p>Mientras acabamos el nuevo portal, te invitamos a visitar el <a href="/blog" target="_blank">blog del Área de Participación Ciudadana, Transparencia y Gobierno Abierto</a> para conocer nuestros avances y novedades; o la <a href="/">sección de Participación Ciudadana</a> donde poder decidir qué ciudad es la que quieres.</p>
+      </div>
+      </div>
+    </div>
+  <% end %>
+
+  <% if opendata_page? %>
+    <div class="row home-page">
+      <div class="small-12 column text-center">
+        <h1><%= t("pages.opendata") %></h1>
+
+      <div class="small-12 medium-10 column small-centered">
+       <p>Estamos trabajando en el nuevo Portal de Datos Abiertos del Ayuntamiento de Madrid, por ahora puedes visitar el portal que existía hasta ahora:</p>
+
+        <%= link_to "Ir al Portal de Datos Abiertos", t("layouts.header.external_link_opendata_url"), target: "_blank", class: "button radius" %>
+
+        <p>Mientras acabamos el nuevo portal, te invitamos a visitar el <a href="/blog" target="_blank">blog del Área de Participación Ciudadana, Transparencia y Gobierno Abierto</a> para conocer nuestros avances y novedades; o la <a href="/">sección de Participación Ciudadana</a> donde poder decidir qué ciudad es la que quieres.</p>
+      </div>
+    </div>
+  <% end %>
 </header>

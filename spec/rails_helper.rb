@@ -1,3 +1,5 @@
+require 'coveralls'
+Coveralls.wear!('rails')
 ENV['RAILS_ENV'] ||= 'test'
 require File.expand_path('../../config/environment', __FILE__)
 abort("The Rails environment is running in production mode!") if Rails.env.production?
@@ -20,3 +22,6 @@ RSpec.configure do |config|
 end
 
 Capybara.javascript_driver = :poltergeist
+Capybara.exact = true
+
+OmniAuth.config.test_mode = true

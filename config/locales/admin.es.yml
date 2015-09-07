@@ -1,0 +1,117 @@
+es:
+  admin:
+    settings:
+      index:
+        title: Configuración global
+        update_setting: Actualizar
+      flash:
+        updated: 'Valor actualizado'
+    dashboard:
+      index:
+        title: Administración
+    menu:
+      settings: Configuración global
+      debate_topics: Temas de debate
+      hidden_debates: Debates ocultos
+      hidden_comments: Comentarios ocultos
+      hidden_users: Usuarios ocultos
+      organizations: Organizaciones
+      officials: Cargos públicos
+      moderators: Moderadores
+      stats: Estadísticas
+    organizations:
+      index:
+        title: Organizaciones
+        search_placeholder: "Nombre, email o teléfono"
+        search: Buscar
+        verify: Verificar
+        reject: Rechazar
+        verified: Verificada
+        rejected: Rechazada
+        filter: Filtro
+        filters:
+          all: Todas
+          pending: Pendientes
+          verified: Verificadas
+          rejected: Rechazadas
+      search:
+        title: "Buscar Organizaciones"
+    actions:
+      hide: Ocultar
+      hide_author: Bloquear al autor
+      restore: Volver a mostrar
+      confirm: '¿Estás seguro?'
+      confirm_hide: Confirmar
+    tags:
+      index:
+        title: 'Temas de debate'
+        add_tag: 'Añade un nuevo tema de debate'
+      mark_as_featured: 'Proponer tema al crear debate'
+      name:
+        placeholder: 'Escribe el nombre del tema'
+      create: Crear Tema
+      update: Actualizar Tema
+      destroy: Eliminar Tema
+    comments:
+      index:
+        title: Comentarios ocultos
+        filter: Filtro
+        filters:
+          all: Todos
+          with_confirmed_hide: Confirmados
+          without_confirmed_hide: Pendientes
+    debates:
+      index:
+        title: Debates ocultos
+        filter: Filtro
+        filters:
+          all: Todos
+          with_confirmed_hide: Confirmados
+          without_confirmed_hide: Pendientes
+    users:
+      index:
+        title: Usuarios bloqueados
+        filter: Filtro
+        filters:
+          all: Todos
+          with_confirmed_hide: Confirmados
+          without_confirmed_hide: Pendientes
+      show:
+        title: "Actividad del usuario %{user}"
+        back: Volver
+        email: "Email:"
+        registered_at: "Fecha de alta:"
+        hidden_at: "Bloqueado:"
+    officials:
+      level_0: "No es cargo público"
+      level_1: Nivel 1
+      level_2: Nivel 2
+      level_3: Nivel 3
+      level_4: Nivel 4
+      level_5: Nivel 5
+      index:
+        title: Cargos Públicos
+        search_placeholder: 'Buscar usuario por nombre o email'
+        search: Buscar
+      search:
+        title: 'Cargos Públicos: Búsqueda de usuarios'
+        edit_official: Editar cargo público
+        make_official: Convertir en cargo público
+        search: Buscar
+      edit:
+        title: 'Cargos Públicos: Editar usuario'
+        destroy: "Eliminar condición de 'Cargo Público'"
+        back: Volver
+      flash:
+        official_updated: 'Datos del cargo público guardados'
+        official_destroyed: 'Datos guardados: el usuario ya no es cargo público'
+    moderators:
+      index:
+        title: Moderadores
+      search:
+        email_placeholder: 'Buscar usuario por email'
+        search: Buscar
+        user_not_found: 'Usuario no encontrado'
+      moderator:
+        delete: Borrar
+        add: Añadir

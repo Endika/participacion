@@ -1,37 +1,47 @@
 <%= form_for(@debate) do |f| %>
-    <% if @debate.errors.any? %>
-        <div id="error_explanation" class="alert-box alert radius">
-            <p><%= pluralize(@debate.errors.count, t("debates.form.one_error"), t("debates.form.multiple_errors")) %> <%= t("debates.form.not_saved") %>:</p>
-            <ul>
-                <% @debate.errors.full_messages.each do |message| %>
-                    <li><%= message %></li>
-                <% end %>
-            </ul>
-        </div>
-    <% end %>
+  <%= render 'shared/errors', resource: @debate %>
 
-    <p><strong><%= t("debates.form.debate_title") %></strong></p>
-    <p><%= t("debates.form.title_instructions") %></p>
-    <%= f.text_field :title %>
+  <div class="row">
+    <div class="small-12 column">
+      <%= f.label :title, t("debates.form.debate_title") %>
+      <%= f.text_field :title, maxlength: Debate::TITLE_LENGTH, placeholder: t("debates.form.debate_title"), label: false %>
+    </div>
 
-  <br/>
-  <p><strong><%= t("debates.form.debate_text") %></strong></p>
-  <p><%= t("debates.form.text_instructions") %></p>
-  <%= f.cktext_area :description, ckeditor: { language: I18n.locale } %>
-  <div>
-    <%= f.label :tag_list, t("debates.form.tags_label") %><br />
-    <%= f.text_field :tag_list, value: @debate.tag_list.to_s %>
+    <div class="ckeditor small-12 column">
+      <%= f.label :description, t("debates.form.debate_text") %>
+      <%= f.cktext_area :description, ckeditor: { language: I18n.locale }, label: false %>
+    </div>
+
+    <div class="small-12 column">
+      <%= f.label :tag_list, t("debates.form.tags_label") %>
+      <span class="note"><%= t("debates.form.tags_instructions") %></span>
+      <span class="tags">
+        <% @featured_tags.each do |tag| %>
+          <a class="js-add-tag-link"><%= tag.name %></a>
+        <% end %>
+      </span>
+      <%= f.text_field :tag_list, value: @debate.tag_list.to_s, label: false %>
+    </div>
+
+    <div class="small-12 column">
+      <% if @debate.new_record? %>
+        <%= f.label :terms_of_service do %>
+          <%= f.check_box :terms_of_service, label: false %>
+          <%= t("form.accept_terms",
+              policy: link_to(t("form.policy"), "/privacy", target: "blank"), conditions: link_to(t("form.conditions"), "/conditions", target: "blank")).html_safe
+          %>
+        <% end %>
+      <% end %>
+    </div>
+
+    <div class="small-12 column">
+      <%= f.simple_captcha input_html: { required: false } %>
+    </div>
+
+    <div class="actions small-12 column">
+      <%= f.submit(class: "button radius", value: t("debates.#{action_name}.form.submit_button")) %>
+    </div>
   </div>
-
-  <% if @debate.new_record? %>
-    <%= f.check_box :terms_of_service %>
-    <%= t("debates.form.accept_terms") %>
-  <% end %>
-
-  <%= render 'shared/captcha', resource: @debate %>
-
-  <div class="actions">
-    <%= f.submit(class: "button radius") %>
-  </div>
-  <br/>
 <% end %>
+
+

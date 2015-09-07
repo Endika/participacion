@@ -1,0 +1,69 @@
+<div class="verification account row">
+  <div class="small-12 column">
+
+    <div class="text-center">
+      <div class="small-4 column verification-step active">
+        <%= t("verification.step_1") %>
+      </div>
+      <div class="small-4 column verification-step">
+        <%= t("verification.step_2") %>
+      </div>
+      <div class="small-4 column verification-step">
+        <%= t("verification.step_3") %>
+      </div>
+    </div>
+
+    <div class="progress small-12 success round">
+      <span class="meter" style="width: 33%"></span>
+    </div>
+
+    <%= link_to account_path, class: "left back clear" do %>
+      <i class="icon-angle-left left"></i>
+      <%= t("verification.back") %>
+    <% end %>
+
+    <h1><%= t("verification.residence.new.title") %></h1>
+
+    <%= form_for @residence, as: "residence", url: residence_path do |f| %>
+      <%= render "errors" %>
+
+      <div class="small-12 medium-8">
+        <div class="small-12 medium-4 left">
+        <%= f.label t("verification.residence.new.document_type_label") %>
+        <%= f.select :document_type, document_types, prompt: "", label: false %>
+        </div>
+        <div class="small-12 medium-5 left">
+        <%= f.label t("verification.residence.new.document_number") %>
+        <%= f.text_field :document_number, label: false %>
+        </div>
+      </div>
+
+      <div class="date small-12 medium-6 clear">
+      <%= f.label t("verification.residence.new.date_of_birth") %>
+      <%= f.date_select :date_of_birth,
+                        prompt: true,
+                        start_year: 1900, end_year: 16.years.ago.year,
+                        label: false %>
+      </div>
+
+      <div class="small-12 medium-4 clear">
+        <%= f.label t("verification.residence.new.postal_code") %>
+        <%= f.text_field :postal_code, label: false %>
+      </div>
+
+      <div class="small-12">
+        <%= f.label :terms_of_service do %>
+          <%= f.check_box :terms_of_service, label: false %>
+          <%= t("verification.residence.new.accept_terms_text",
+              terms_url: link_to(t("verification.residence.new.terms"), "/census_terms",
+              target: "_blank")).html_safe
+          %>
+        <% end %>
+      </div>
+
+      <div class="small-12 clear">
+        <%= f.submit t("verification.residence.new.verify_residence") %>
+      </div>
+    <% end %>
+  </div>
+</div>

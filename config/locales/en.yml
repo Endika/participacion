@@ -1,53 +1,225 @@
 en:
+  locale: English
   layouts:
     header:
       external_link_transparency: Transparency
+      external_link_transparency_url: "http://www.madrid.es/portales/munimadrid/es/Inicio/El-Ayuntamiento/Transparencia?vgnextfmt=default&vgnextchannel=20fd850769797310VgnVCM2000000c205a0aRCRD"
       external_link_opendata: Open data
+      external_link_opendata_url: "http://datos.madrid.es"
+      external_link_blog: Blog
+      external_link_blog_url: "/blog"
       open_gov: "%{open} government"
       open: "Open"
+      logo: "Open government | Participation"
       participation: Participation
-      menu: Menu
-      open_city: We are opening Madrid
-      open_city_slogan: So the citizens can decide what kind of city they want.
-      create_debate: Create a debate
+      open_city_title: "The city you want, it will be the city you want."
+      open_city_slogan:
+        "Start listening to Madrid.
+        For that we open this digital Puerta del Sol, where all the locals can meet to discuss and share everything we want.
+        Also a place where you can talk directly with all the employees of the City of Madrid, from the Mayor to any public employee of the City hall."
+      open_city_text:
+        "Here every voice has its place and are citizens, and no one in their name, they decide to vote debates what issues are
+        most important of every time. Government officials have individual users with whom you may participate in the debates, and evaluated,
+        the same level as everyone else. Because the Madrid City Council works for its citizens, and must respond to them."
+      open_city_soon: "And soon... we opened the section of citizen proposals."
+      see_all_debates: See all debates
       my_account_link: My account
+      locale: "Language:"
+      administration: Administration
+      moderation: Moderation
+      # welcome: Welcome
+      more_information: "More information"
+      debates: Debates
+      # initiatives: Initiatives
+    footer:
+      description:
+        "The city you want, it will be the city you want. %{more_info} here on this page.
+        This Open Government Portal is %{open_source}, and code is in %{github}.
+        Madrid, for the whole world."
+      more_info: Get more information
+      more_info_url: "/more_information"
+      open_source: "software libre AGPLv3"
+      open_source_url: "http://www.gnu.org/licenses/agpl-3.0.html"
+      github: "github"
+      github_url: "https://github.com/ayuntamientomadrid"
+      copyright: "Ayuntamiento de Madrid, %{year}"
+      participation_title: "Participation"
+      participation_text: Decide what should be the city of Madrid you want.
+      transparency_title: Transparency
+      transparency_text: Get any information on the City of Madrid.
+      open_data_title:  Open Data
+      open_data_text: "All City Council data are yours."
+      contact_us: "Contact us"
+      privacy: "Privacy Policy"
+      conditions: "Terms of use"
+  form:
+      error: error
+      errors: errors
+      not_saved: "prohibited this %{resource} from being saved:"
+      accept_terms: "I accept the %{policy} and the %{conditions}"
+      policy: "Privacy policy"
+      conditions: "Terms of use"
+      user: account
+      debate: debate
+      verification::sms: phone
+  application:
+    alert:
+      only_beta_testers: "Sorry only Beta Testers are allowed access at the moment"
   debates:
+    index:
+      start_debate: Start a debate
+      select_order: Order by
+      select_order_long: Order debates by
+      orders:
+        hot_score: most active
+        created_at: newest
+        score: best rated
+        most_commented: most commented
+        random: random
+      filter_topic:
+        one: " with the topic '%{topic}'"
+        other: " with the topic '%{topic}'"
+      search_results:
+        one: " containing '%{search_term}'"
+        other: " containing '%{search_term}'"
     debate:
       debate: Debate
-      vote: vote
-      votes: votes
+      comments:
+        zero: No comments
+        one: 1 Comment
+        other: "%{count} Comments"
+      votes:
+        zero: No votes
+        one: 1 vote
+        other: "%{count} votes"
+    comment:
+      author: Debate's author
+      moderator: Moderator
+      admin: Administrator
+      deleted: This comment has been deleted
+      user_deleted: Deleted user
+      responses:
+        zero: No Responses
+        one: 1 Response
+        other: "%{count} Responses"
+      votes:
+        zero: No votes
+        one: 1 vote
+        other: "%{count} votes"
     form:
-      one_error: error
-      plural_errors: errors
-      not_saved: "prohibited this debate from being saved:"
       debate_title: Debate title
-      title_instructions: "SBe clear and precise with the title, but make it informative"
-      debate_text: Ellaborate your opinion
-      text_instructions: "Explain your opinion, go into details, tell us what's the purpose of your idea"
-      tags_label: "Topics (comma separated)"
-      accept_terms: I accept the privacy policy and the legal terms
+      debate_text: Initial text for debate
+      tags_label: Topics
+      tags_instructions: >
+        Tag this debate. You can choose among our proposals on the list or add any other topic you want by
+        writing them separated by ",".
+        Some suggestions:
     show:
       back_link: Back
-      comment: Comment
-      comments: Comments
-      leave_comment: Write a comment
+      author_deleted: Deleted user
+      comments_title: Comments
+      comments:
+        zero: No comments
+        one: 1 Comment
+        other: "%{count} Comments"
+      login_to_comment: "You need to %{signin} or %{signup} to comment."
       edit_debate_link: Edit
+      share: Share
     edit:
       editing: Edit debate
       show_link: Show debate
       back_link: Back
+      form:
+        submit_button: "Save changes"
     new:
-      publish_new: Publish new debate
+      start_new: Start a debate
       back_link: Back
+      recommendations_title: Tips for creating a debate
+      recommendation_one: "Do not write the title of the debate or whole sentences in capital. On the Internet this is considered shouting. And nobody likes to scream."
+      recommendation_two: "Any discussion or comment that involves an illegal act will be eliminated, also intending to sabotage the debate spaces, everything else is permitted."
+      recommendation_three: "The harsh criticism are very welcome. This is a space of thought but we recommend preserving the elegance and intelligence. The world is better with them present."
+      recommendation_four: "Enjoy this space, voices that fill it, it is yours too."
+      form:
+        submit_button: "Start a debate"
+    create:
+      form:
+        submit_button: "Start a debate"
+    update:
+      form:
+        submit_button: "Save changes"
+  comments:
+    form:
+      leave_comment: Write a comment
+      comment_as_moderator: Comment as moderator
+      comment_as_admin: Comment as administrator
   comments_helper:
     comment_link: Comment
     comment_button: Publish comment
     reply_link: Reply
     reply_button: Publish reply
   votes:
-    notice_thanks: "Thanks for voting."
-    notice_already_registered: "Your vote is already registered."
+    agree: I agree
+    disagree: I disagree
+    supports: Supports
+    unauthenticated: "You need to %{signin} or %{signup} before continuing."
+    signin: sign in
+    signup: sign up
+    anonymous: "This debate already has too much anonymous votes, %{verify_account} to vote."
+    verify_account: verify your account
+    organizations: Organizations can not vote
   account:
     show:
       title: "My account"
       save_changes_submit: "Save changes"
+      email_on_debate_comment_label: "Receive email when someone comments on my debates"
+      email_on_comment_reply_label: "Receive email when someone replies to my comments"
+      change_credentials_link: "Change my credentials"
+      avatar: "Avatar"
+      personal: "Personal data"
+      username_label: "Username"
+      phone_number_label: "Phone number"
+      organization_name_label: "Organization name"
+      notifications: Notifications
+      finish_verification: "Finish verification"
+      verified_account: Verified account
+      verify_my_account: Verify my account
+  simple_captcha:
+    placeholder: "Enter the image value"
+    label: "Enter the image value in the next form"
+    refresh_button_text: "Refresh"
+    message:
+      user: "secret code did not match with the image"
+      debate: "secret code did not match with the image"
+  shared:
+    tags_cloud:
+      tags: Topics
+    flag: Flag as inappropriate
+    unflag: Undo flag
+    collective: Collective
+    search_form:
+      search_title: Search
+      search_button: Search
+      search_placeholder: "Search..."
+  mailer:
+    comment:
+      subject: Someone has commented on your debate
+    reply:
+      subject: Someone has replied to your comment
+  unauthorized:
+    default: "You are not authorized to access this page."
+    manage:
+      all: "You are not authorized to %{action} %{subject}."
+  welcome:
+    last_debates: Last debates
+  omniauth:
+    finish_signup:
+      title: Add Email
+    twitter:
+      sign_in: Sign in with Twitter
+      sign_up: Sign up with Twitter
+    facebook:
+      sign_in: Sign in with Facebook
+      sign_up: Sign up with Facebook
+    google_oauth2:
+      sign_in: Sign in with Google
+      sign_up: Sign up with Google
