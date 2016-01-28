@@ -2,46 +2,81 @@
 	<div class="row-full">
 		<div class="row">
 
-      <div class="small-12 medium-4 column">
-        <div class="logo">
+      <div class="small-12 large-4 column">
+        <h1 class="logo">
           <%= link_to t("layouts.header.open_gov", open: "#{t('layouts.header.open')}").html_safe %>
-        </div>
+        </h1>
 
-        <p class="footer-description">
+        <p class="info">
           <%= t("layouts.footer.description",
-            more_info: link_to(t("layouts.footer.more_info"), t("layouts.footer.more_info_url")),
             open_source: link_to(t("layouts.footer.open_source"), t("layouts.footer.open_source_url"), target: "blank"),
-            github:  link_to(t("layouts.footer.github"), t("layouts.footer.github_url"), target: "blank")).html_safe
+            consul:  link_to(t("layouts.footer.consul"), t("layouts.footer.consul_url"), target: "blank")).html_safe
           %>
-          <br>
           <%= t("layouts.footer.contact_us") %>
-          <%= mail_to "web.gobiernoabierto@madrid.es" %>
+          <%= link_to t("layouts.footer.faq"), page_path('faq') %>
         </p>
       </div>
 
-      <div class="footer-sections small-12 medium-8 column">
+      <div class="footer-sections small-12 large-8 column">
         <div class="small-12 medium-4 column">
-          <h4><%= t("layouts.footer.participation_title") %></h4>
+          <h2>
+            <%= link_to t("layouts.footer.participation_title"), root_path %>
+          </h2>
           <p><%= t("layouts.footer.participation_text") %></p>
         </div>
 
         <div class="small-12 medium-4 column">
-          <h4><%= t("layouts.footer.transparency_title") %></h4>
+          <h2>
+            <%= link_to t("layouts.footer.transparency_title"), t("layouts.footer.transparency_url") %>
+          </h2>
           <p><%= t("layouts.footer.transparency_text") %></p>
         </div>
 
         <div class="small-12 medium-4 column">
-          <h4><%= t("layouts.footer.open_data_title") %></h4>
+          <h2>
+            <%= link_to t("layouts.footer.open_data_title"), "/opendata" %>
+          </h2>
           <p><%= t("layouts.footer.open_data_text") %></p>
         </div>
       </div>
     </div>
 
     <div class="subfooter row">
-      <div class="small-12 column">
-        <%= t("layouts.footer.copyright", year: Time.now.year) %>&nbsp;|&nbsp;
-        <%= link_to t("layouts.footer.privacy"), "/privacy" %>&nbsp;|&nbsp;
-        <%= link_to t("layouts.footer.conditions"), "/conditions" %>
+      <div class="small-12 medium-9 column">
+        <p>
+          <%= t("layouts.footer.copyright", year: Time.now.year) %>&nbsp;|&nbsp;
+          <%= link_to t("layouts.footer.more_info"), page_path('more_information') %>&nbsp;|&nbsp;
+          <%= link_to t("layouts.footer.privacy"), page_path('privacy') %>&nbsp;|&nbsp;
+          <%= link_to t("layouts.footer.conditions"), page_path('conditions') %>&nbsp;|&nbsp;
+          <%= link_to t("layouts.footer.accessibility"), page_path('accessibility') %>
+        </p>
+      </div>
+
+      <div class="small-12 medium-3 column social">
+        <% if Setting['twitter_handle'] %>
+          <%= link_to "https://twitter.com/#{Setting['twitter_handle']}", target: "_blank", title: t("social.twitter") do %>
+            <span class="sr-only"><%= t("social.twitter") %></span>
+            <i class="icon-twitter"></i>
+          <% end %>
+        <% end %>
+        <% if Setting['facebook_handle'] %>
+          <%= link_to "https://www.facebook.com/#{Setting['facebook_handle']}/", target: "_blank", title: t("social.facebook") do %>
+            <span class="sr-only"><%= t("social.facebook") %></span>
+            <i class="icon-facebook"></i>
+          <% end %>
+        <% end %>
+        <%  if Setting['blog_url'] %>
+          <%= link_to Setting['blog_url'], target: "_blank", title: t("social.blog") do %>
+            <span class="sr-only"><%= t("social.blog") %></span>
+            <i class="icon-blog"></i>
+          <% end %>
+        <% end %>
+        <% if Setting['youtube_handle'] %>
+          <%= link_to "https://www.youtube.com/#{Setting['youtube_handle']}", target: "_blank", title: t("social.youtube") do %>
+            <span class="sr-only"><%= t("social.youtube") %></span>
+            <i class="icon-youtube"></i>
+          <% end %>
+        <% end %>
       </div>
     </div>
   </div>

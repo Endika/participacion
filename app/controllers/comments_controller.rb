@@ -1,5 +1,5 @@
 class CommentsController < ApplicationController
-  before_action :authenticate_user!
+  before_action :authenticate_user!, only: :create
   before_action :load_commentable, only: :create
   before_action :build_comment, only: :create
 
@@ -8,11 +8,16 @@ class CommentsController < ApplicationController
 
   def create
     if @comment.save
-      Mailer.comment(@comment).deliver_later if email_on_debate_comment?
-      Mailer.reply(@comment).deliver_later if email_on_comment_reply?
+      CommentNotifier.new(comment: @comment).process
+      add_notification @comment
     else
       render :new
     end
+  end
+
+  def show
+    @comment = Comment.find(params[:id])
+    set_comment_flags(@comment.subtree)
   end
 
   def vote
@@ -55,20 +60,21 @@ class CommentsController < ApplicationController
       @commentable = Comment.find_commentable(comment_params[:commentable_type], comment_params[:commentable_id])
     end
 
-    def email_on_debate_comment?
-      @comment.commentable.author.email_on_debate_comment?
-    end
-
-    def email_on_comment_reply?
-      @comment.reply? && @comment.parent.author.email_on_comment_reply?
-    end
-
     def administrator_comment?
-      ["1", true].include?(comment_params[:as_administrator]) && can?(:comment_as_administrator, Debate)
+      ["1", true].include?(comment_params[:as_administrator]) && can?(:comment_as_administrator, @commentable)
     end
 
     def moderator_comment?
-      ["1", true].include?(comment_params[:as_moderator]) && can?(:comment_as_moderator, Debate)
+      ["1", true].include?(comment_params[:as_moderator]) && can?(:comment_as_moderator, @commentable)
     end
+
+    def add_notification(comment)
+      if comment.reply?
+        notifiable = comment.parent
+      else
+        notifiable = comment.commentable
+      end
+      Notification.add(notifiable.author_id, notifiable) unless comment.author_id == notifiable.author_id
+   end
 
 end

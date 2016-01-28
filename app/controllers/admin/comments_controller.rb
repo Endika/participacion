@@ -4,7 +4,7 @@ class Admin::CommentsController < Admin::BaseController
   before_action :load_comment, only: [:confirm_hide, :restore]
 
   def index
-    @comments = Comment.only_hidden.send(@current_filter).order(hidden_at: :desc).page(params[:page])
+    @comments = Comment.only_hidden.with_visible_author.send(@current_filter).order(hidden_at: :desc).page(params[:page])
   end
 
   def confirm_hide
@@ -14,6 +14,8 @@ class Admin::CommentsController < Admin::BaseController
 
   def restore
     @comment.restore
+    @comment.ignore_flag
+    Activity.log(current_user, :restore, @comment)
     redirect_to request.query_parameters.merge(action: :index)
   end
 

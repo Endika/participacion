@@ -4,14 +4,14 @@
 %>
 
 <dl class="sub-nav">
-  <dt><%= t("#{i18n_namespace}.filter") %>: </dt>
+  <dt class="sr-only"><%= t("#{i18n_namespace}.filter") %>: </dt>
 
   <% @valid_filters.each do |filter| %>
     <% if @current_filter == filter %>
       <dd class="active"><%= t("#{i18n_namespace}.filters.#{filter}") %></dd>
     <% else %>
       <dd><%= link_to t("#{i18n_namespace}.filters.#{filter}"),
-        current_path_with_query_params(filter: filter) %></dd>
+        current_path_with_query_params(filter: filter, page: 1) %></dd>
     <% end %>
   <% end %>
 </dl>

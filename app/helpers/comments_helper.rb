@@ -12,9 +12,31 @@ module CommentsHelper
     parent_id.blank? ? dom_id(commentable) : "comment_#{parent_id}"
   end
 
-  def select_children(comments, parent)
-    return [] if comments.blank?
-    comments.select{|c| c.parent_id == parent.id}
+  def child_comments_of(parent)
+    if @comment_tree.present?
+      @comment_tree.ordered_children_of(parent)
+    else
+      parent.children
+    end
   end
 
+  def user_level_class(comment)
+    if comment.as_administrator?
+      "is-admin"
+    elsif comment.as_moderator?
+      "is-moderator"
+    elsif comment.user.official?
+      "level-#{comment.user.official_level}"
+    else
+      "" # Default no special user class
+    end
+  end
+
+  def comment_author_class(comment, author_id)
+    if comment.user_id == author_id
+      "is-author"
+    else
+      "" # Default not author class
+    end
+  end
 end

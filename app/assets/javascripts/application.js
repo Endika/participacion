@@ -12,29 +12,52 @@
 //
 //= require jquery
 //= require jquery_ujs
+//= require jquery-ui/datepicker
+//= require jquery-ui/datepicker-es
 //= require foundation
 //= require turbolinks
 //= require ckeditor/init
+//= require_directory ./ckeditor
 //= require social-share-button
 //= require initial
 //= require ahoy
-//= require d3
-//= require c3
-//= require c3ext
 //= require app
-//= require_tree .
+//= require check_all_none
+//= require comments
+//= require dropdown
+//= require ie_alert
+//= require location_changer
+//= require moderator_comment
+//= require moderator_debates
+//= require moderator_proposals
+//= require prevent_double_submission
+//= require gettext
+//= require annotator
+//= require tags
+//= require users
+//= require votes
+//= require annotatable
+//= require advanced_search
+//= require registration_form
 
 var initialize_modules = function() {
   App.Comments.initialize();
   App.Users.initialize();
   App.Votes.initialize();
   App.Tags.initialize();
-  App.Stats.initialize();
   App.Dropdown.initialize();
   App.LocationChanger.initialize();
+  App.CheckAllNone.initialize();
+  App.PreventDoubleSubmission.initialize();
+  App.IeAlert.initialize();
+  App.Annotatable.initialize();
+  App.AdvancedSearch.initialize();
+  App.RegistrationForm.initialize();
 };
 
 $(function(){
+  Turbolinks.enableProgressBar()
+
   $(document).ready(initialize_modules);
   $(document).on('page:load', initialize_modules);
   $(document).on('ajax:complete', initialize_modules);

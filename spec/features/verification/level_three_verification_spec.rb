@@ -26,10 +26,10 @@ feature 'Level three verification' do
     fill_in 'sms_confirmation_code', with: user.sms_confirmation_code
     click_button 'Send'
 
-    expect(page).to have_content "Correct code. Your account is verified"
+    expect(page).to have_content "Code correct. Your account is now verified"
 
     expect(page).to_not have_link "Verify my account"
-    expect(page).to have_content "Verified account"
+    expect(page).to have_content "Account verified"
   end
 
   scenario 'Verification with residency and verified email' do
@@ -51,15 +51,15 @@ feature 'Level three verification' do
       click_button "Send code"
     end
 
-    expect(page).to have_content 'We have send you a confirmation email to your email account: rock@example.com'
+    expect(page).to have_content 'We have sent a confirmation email to your account: rock@example.com'
 
     sent_token = /.*email_verification_token=(.*)".*/.match(ActionMailer::Base.deliveries.last.body.to_s)[1]
     visit email_path(email_verification_token: sent_token)
 
-    expect(page).to have_content "You are now a verified user"
+    expect(page).to have_content "You are a verified user"
 
     expect(page).to_not have_link "Verify my account"
-    expect(page).to have_content "Verified account"
+    expect(page).to have_content "Account verified"
   end
 
   scenario 'Verification with residency and sms and letter' do
@@ -81,16 +81,10 @@ feature 'Level three verification' do
     fill_in 'sms_confirmation_code', with: user.sms_confirmation_code
     click_button 'Send'
 
-    expect(page).to have_content 'Correct code'
+    expect(page).to have_content 'Code correct'
 
-    click_button "Send me a letter with the code"
+    click_link "Send me a letter with the code"
 
-    expect(page).to have_content "Thank you for requesting a maximum security code in a few days we will send it to the address on your census data."
-
-    user.reload
-    fill_in "letter_verification_code", with: user.letter_verification_code
-    click_button "Send"
-
-    expect(page).to have_content "Correct code. Your account is verified"
+    expect(page).to have_content "Thank you for requesting your maximum security code (only required for the final votes). In a few days we will send it to the address featuring in the data we have on file."
   end
 end

@@ -1,45 +1,31 @@
-<div class="verification account row">
-  <div class="small-12 column">
-
+<div class="row verify">
+  <div class="small-12 medium-9 large-6 small-centered column">
     <div class="text-center">
-      <div class="small-4 column verification-step completed">
-        <%= t("verification.step_1") %>
-      </div>
-      <div class="small-4 column verification-step completed">
-        <%= t("verification.step_2") %>
-      </div>
-      <div class="small-4 column verification-step active">
-        <%= t("verification.step_3") %>
-      </div>
+      <h1>
+        <i class="icon-check"></i>
+        <%= t("pages.verify.title") %>
+      </h1>
 
-      <div class="progress small-12 success round">
-        <span class="meter" style="width: 100%"></span>
-      </div>
+      <p><%= t("pages.verify.info") %></p>
     </div>
 
-    <div class="small-12 medium-12 column">
+    <div class="small-12 large-9 small-centered column">
+      <%= form_for @letter, url: letter_path, method: :patch do |f| %>
+        <%= f.text_field :email, label: t("pages.verify.email"), placeholder: t("pages.verify.email") %>
+        <%= f.password_field :password, label: t("pages.verify.password"), placeholder: t("pages.verify.password") %>
 
-      <%= link_to account_path, class: "left back clear" do %>
-        <i class="icon-angle-left left"></i>
-        <%= t("verification.back") %>
+        <p class="letter-divider text-center">
+          <i class="icon-letter"></i>
+        </p>
+
+        <p>
+          <%= t("pages.verify.info_code") %>
+        </p>
+
+        <%= f.text_field :verification_code, label: t("pages.verify.code"), placeholder: t("pages.verify.code") %>
+
+        <%= f.submit(class: "button radius success expand", value: t("pages.verify.submit")) %>
       <% end %>
-
-      <h1><%= t("verification.letter.edit.title") %></h1>
-
-      <div class="small-12 medium-6">
-        <%= form_for @letter, as: "letter", url: letter_path, method: :put do |f| %>
-          <% if @error %>
-            <div data-alert class="alert-box alert radius">
-              <a href="#" class="close">&times;</a>
-              <%= @error %>
-            </div>
-          <% end %>
-
-          <%= f.text_field :verification_code, label: t("verification.letter.edit.confirmation_code") %>
-          <%= f.submit t("verification.letter.new.send_code"), class: "button radius success" %>
-        <% end %>
-      </div>
-
     </div>
   </div>
 </div>

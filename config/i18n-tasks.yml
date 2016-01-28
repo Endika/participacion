@@ -24,6 +24,7 @@ data:
     - config/locales/%{locale}.yml
     - config/locales/admin.%{locale}.yml
     - config/locales/moderation.%{locale}.yml
+    - config/locales/management.%{locale}.yml
     - config/locales/verification.%{locale}.yml
     - config/locales/mailers.%{locale}.yml
     - config/locales/pages.%{locale}.yml
@@ -94,6 +95,9 @@ search:
 ignore_missing:
   - 'unauthorized.*'
   - 'errors.messages.blank'
+  - 'errors.messages.taken'
+  - 'devise.failure.invalid'
+  - 'devise.registrations.destroyed'
 
 ## Consider these keys used:
 ignore_unused:
@@ -104,11 +108,29 @@ ignore_unused:
   - 'admin.officials.level_*'
   - 'admin.comments.index.filter*'
   - 'admin.debates.index.filter*'
+  - 'admin.proposals.index.filter*'
+  - 'admin.spending_proposals.index.filter*'
   - 'admin.organizations.index.filter*'
   - 'admin.users.index.filter*'
+  - 'admin.activity.show.filter*'
+  - 'admin.comments.index.hidden_*'
+  - 'admin.settings.index.features.*'
   - 'moderation.comments.index.filter*'
+  - 'moderation.comments.index.order*'
   - 'moderation.debates.index.filter*'
+  - 'moderation.proposals.index.filter*'
+  - 'moderation.proposals.index.order*'
+  - 'moderation.debates.index.filter*'
+  - 'moderation.debates.index.order*'
+  - 'users.show.filters.*'
+  - 'debates.index.select_order'
   - 'debates.index.orders.*'
+  - 'debates.index.search_form.*'
+  - 'proposals.index.select_order'
+  - 'proposals.index.orders.*'
+  - 'proposals.index.search_form.*'
+  - 'notifications.index.comments_on*'
+  - 'notifications.index.replies_to*'
   - 'helpers.page_entries_info.*' # kaminari
   - 'views.pagination.*' # kaminari
 # - '{devise,kaminari,will_paginate}.*'

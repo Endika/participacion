@@ -1,6 +1,7 @@
+<% provide :title do %><%= t("devise_views.users.registrations.new.title") %><% end %>
 <h2><%= t("devise_views.users.registrations.new.title") %></h2>
 
-<%# render 'devise/omniauth_form' %>
+<%= render 'devise/omniauth_form' %>
 
 <%= form_for(resource, as: resource_name, url: registration_path(resource_name)) do |f| %>
   <%= render 'shared/errors', resource: resource %>
@@ -13,9 +14,9 @@
   <div class="row">
     <div class="small-12 column">
 
-      <%= f.label t("devise_views.users.registrations.new.username_label") %>
-      <span class="note"><%= t("devise_views.users.registrations.new.username_note") %></span>
-      <%= f.text_field  :username,  placeholder: t("devise_views.users.registrations.new.username_label"), label: false %>
+      <%= f.label :username %>
+      <p class="note"><%= t("devise_views.users.registrations.new.username_note") %></p>
+      <%= f.text_field  :username, maxlength: User.username_max_length, placeholder: t("devise_views.users.registrations.new.username_label"), label: false %>
 
       <%= f.email_field :email,     placeholder: t("devise_views.users.registrations.new.email_label") %>
 
@@ -25,6 +26,8 @@
       <%= f.password_field :password_confirmation, autocomplete: "off",
                            label: t("devise_views.users.registrations.new.password_confirmation_label"),
                            placeholder: t("devise_views.users.registrations.new.password_confirmation_label") %>
+
+      <%= f.hidden_field :locale, value: I18n.locale %>
 
       <%= f.simple_captcha input_html: {required: false} %>
 

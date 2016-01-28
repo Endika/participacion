@@ -20,7 +20,7 @@ feature 'Level two verification' do
     fill_in 'sms_confirmation_code', with: user.sms_confirmation_code
     click_button 'Send'
 
-    expect(page).to have_content 'Correct code'
+    expect(page).to have_content 'Code correct'
   end
 
 end

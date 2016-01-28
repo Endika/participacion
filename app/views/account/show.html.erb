@@ -1,21 +1,12 @@
 <div class="row account">
   <div class="small-12 column">
-    <%= link_to t("account.show.change_credentials_link"), edit_user_registration_path, class: "button radius small secondary right" %>
-
-    <div class="verification">
-      <span class="right verify-account">
-        <% if current_user.level_three_verified? %>
-          <p class="verified">
-            <i class="icon-check"></i>
-            <%= t("account.show.verified_account") %>
-          </p>
-        <% elsif current_user.level_two_verified? %>
-          <%= link_to t("account.show.finish_verification"), new_letter_path, class: "button radius small success right" %>
-        <% else %>
-          <%= link_to t("account.show.verify_my_account"), new_residence_path, class: "button radius small success right" %>
-        <% end %>
-      </span>
+    <div class="right text-right">
+      <%= link_to t("account.show.change_credentials_link"), edit_user_registration_path, class: "button radius small secondary" %>
+      <br>
+      <%= link_to t("account.show.erase_account_link"), users_registrations_delete_form_path, class: "delete" %>
     </div>
+
+    <%= avatar_image(@account, seed: @account.id, size: 100, class: "margin-bottom") %>
 
     <h1 class="inline-block"><%= t("account.show.title") %></h1>
 
@@ -23,30 +14,36 @@
       <%= render "shared/errors", resource: @account %>
 
       <div class="row">
-        <div class="small-12 column">
-          <h2><%= t("account.show.avatar")%></h2>
-          <%= avatar_image(@account, seed: @account.id, size: 60) %>
+        <div class="small-12 medium-6 column">
 
           <h2><%= t("account.show.personal")%></h2>
 
-            <div class="small-12 medium-4">
-          <% if @account.organization? %>
-            <%= f.fields_for :organization do |fo| %>
-              <%= fo.text_field :name, autofocus: true, placeholder: t("account.show.organization_name_label") %>
-            <% end %>
-            <%= f.text_field :phone_number, placeholder: t("account.show.phone_number_label") %>
+          <div class="small-12 medium-10">
+            <% if @account.organization? %>
+              <%= f.fields_for :organization do |fo| %>
+                <%= fo.text_field :name, autofocus: true, maxlength: Organization.name_max_length, placeholder: t("account.show.organization_name_label") %>
+                <%= fo.text_field :responsible_name, autofocus: true, maxlength: Organization.responsible_name_max_length, placeholder: t("account.show.organization_responsible_name_placeholder") %>
+              <% end %>
+              <%= f.text_field :phone_number, placeholder: t("account.show.phone_number_label") %>
 
             <% else %>
-            <%= f.text_field :username, placeholder: t("account.show.username_label") %>
-          <% end %>
+              <%= f.text_field :username, maxlength: User.username_max_length, placeholder: t("account.show.username_label") %>
+            <% end %>
+          </div>
+
+          <div>
+            <%= f.label :public_activity do %>
+              <%= f.check_box :public_activity, label: false %>
+              <span class="checkbox"><%= t("account.show.public_activity_label") %></span>
+            <% end %>
           </div>
 
           <h2><%= t("account.show.notifications")%></h2>
 
           <div>
-            <%= f.label :email_on_debate_comment do %>
-              <%= f.check_box :email_on_debate_comment, label: false %>
-              <span class="checkbox"><%= t("account.show.email_on_debate_comment_label") %></span>
+            <%= f.label :email_on_comment do %>
+              <%= f.check_box :email_on_comment, label: false %>
+              <span class="checkbox"><%= t("account.show.email_on_comment_label") %></span>
             <% end %>
           </div>
 
@@ -56,10 +53,65 @@
               <span class="checkbox"><%= t("account.show.email_on_comment_reply_label") %></span>
             <% end %>
           </div>
+
+          <div>
+            <%= f.label :email_newsletter_subscribed do %>
+              <%= f.check_box :newsletter, label: false %>
+              <span class="checkbox"><%= t("account.show.subscription_to_website_newsletter_label") %></span>
+            <% end %>
+          </div>
+
+          <%= f.submit t("account.show.save_changes_submit"), class: "button radius" %>
         </div>
 
-        <div class="small-12 column">
-          <%= f.submit t("account.show.save_changes_submit"), class: "button radius" %>
+        <div class="user-permissions small-12 medium-6 column">
+          <h2><%= t("account.show.user_permission_title") %></h2>
+
+          <p><%= t("account.show.user_permission_info") %></p>
+
+          <ul>
+            <li><i class="icon-check"></i>&nbsp;<%= t("account.show.user_permission_debates") %></li>
+            <li><i class="icon-check"></i>&nbsp;<%= t("account.show.user_permission_proposal") %></li>
+            <li>
+              <% if current_user.level_two_verified? || current_user.level_three_verified? %>
+                <i class="icon-check"></i>
+              <% else %>
+                <i class="icon-x"></i>
+              <% end %>
+              <%= t("account.show.user_permission_support_proposal") %>
+            </li>
+            <li>
+              <% if current_user.level_three_verified? %>
+                <i class="icon-check"></i>
+              <% else %>
+                <i class="icon-x"></i>
+              <% end %>
+              <%= t("account.show.user_permission_votes") %>
+            </li>
+          </ul>
+
+          <p>
+            <span><%= t("account.show.user_permission_verify_info") %></span>
+            <br>
+            <%= t("account.show.user_permission_verify") %>
+          </p>
+
+          <% unless @account.organization? %>
+            <div>
+              <span class="verify-account">
+                <% if current_user.level_three_verified? %>
+                  <p class="already-verified">
+                    <i class="icon-check"></i>
+                    <%= t("account.show.verified_account") %>
+                  </p>
+                <% elsif current_user.level_two_verified? %>
+                  <%= link_to t("account.show.finish_verification"), verification_path, class: "button radius success" %>
+                <% else %>
+                  <%= link_to t("account.show.verify_my_account"), verification_path, class: "button radius success" %>
+                <% end %>
+              </span>
+            </div>
+          <% end %>
         </div>
       </div>
     <% end %>

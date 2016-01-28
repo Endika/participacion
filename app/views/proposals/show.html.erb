@@ -1,0 +1,90 @@
+<% provide :title do %><%= @proposal.title %><% end %>
+<% provide :social_media_meta_tags do %>
+<%= render "shared/social_media_meta_tags",
+            social_url: proposal_url(@proposal),
+            social_title: @proposal.title,
+            social_description: @proposal.summary %>
+<% end %>
+<% cache [locale_and_user_status(@proposal), @proposal, @proposal.author, Flag.flagged?(current_user, @proposal), @proposal_votes] do %>
+
+  <section class="proposal-show">
+    <div id="<%= dom_id(@proposal) %>" class="row">
+      <div class="small-12 medium-9 column">
+        <i class="icon-angle-left left"></i>&nbsp;
+        <%= link_to t("proposals.show.back_link"), :back, class: 'left back' %>
+
+        <% if current_user && @proposal.editable_by?(current_user) %>
+          <%= link_to edit_proposal_path(@proposal), class: 'edit-proposal button success tiny radius right' do %>
+            <i class="icon-edit"></i>
+            <%= t("proposals.show.edit_proposal_link") %>
+          <% end %>
+        <% end %>
+
+        <h1><%= @proposal.title %></h1>
+        <% if @proposal.conflictive? %>
+          <div class="alert-box alert radius margin-top">
+            <strong><%= t("proposals.show.flag") %></strong>
+          </div>
+        <% end %>
+
+        <div class="proposal-info">
+          <%= render '/shared/author_info', resource: @proposal %>
+
+          <span class="bullet">&nbsp;&bull;&nbsp;</span>
+          <%= l @proposal.created_at.to_date %>
+          <span class="bullet">&nbsp;&bull;&nbsp;</span>
+          <i class="icon-comments"></i>&nbsp;
+          <%= link_to t("proposals.show.comments", count: @proposal.comments_count), "#comments" %>
+          <span class="bullet">&nbsp;&bull;&nbsp;</span>
+          <span class="js-flag-actions">
+            <%= render 'proposals/flag_actions', proposal: @proposal %>
+          </span>
+          <br>
+            <%= t("proposals.show.code") %>
+            <%= @proposal.code %>
+        </div>
+
+        <blockquote><%= @proposal.summary %></blockquote>
+
+        <%= safe_html_with_links @proposal.description %>
+
+        <% if @proposal.external_url.present? %>
+          <div class="document-link">
+            <%= text_with_links @proposal.external_url %>
+          </div>
+        <% end %>
+
+        <% if @proposal.video_url.present? %>
+          <div class="video-link">
+            <%= text_with_links @proposal.video_url %>
+          </div>
+        <% end %>
+
+        <h4><%= @proposal.question %></h4>
+
+        <%= render 'shared/tags', taggable: @proposal %>
+
+        <%= render 'shared/geozone', geozonable: @proposal %>
+
+        <div class="js-moderator-proposal-actions margin">
+          <%= render 'proposals/actions', proposal: @proposal %>
+        </div>
+      </div>
+
+      <aside class="small-12 medium-3 column">
+        <div class="sidebar-divider"></div>
+        <h3><%= t("votes.supports") %></h3>
+        <div class="text-center">
+          <div id="<%= dom_id(@proposal) %>_votes">
+           <%= render 'votes',
+                      { proposal: @proposal, vote_url: vote_proposal_path(@proposal, value: 'yes') } %>
+          </div>
+        </div>
+        <div class="sidebar-divider"></div>
+        <h3><%= t("proposals.show.share") %></h3>
+        <%= social_share_button_tag(@proposal.title) %>
+      </aside>
+    </div>
+  </section>
+<% end %>
+<%= render "proposals/comments" %>

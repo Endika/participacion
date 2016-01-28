@@ -1,7 +1,12 @@
 class Verification::LetterController < ApplicationController
-  before_action :authenticate_user!
-  before_action :verify_resident!
-  before_action :verify_phone!
+  before_action :authenticate_user!, except: [:edit, :update]
+  before_action :login_via_form, only: :update
+
+  before_action :verify_resident!, if: :signed_in?
+  before_action :verify_phone!, if: :signed_in?
+  before_action :verify_verified!, if: :signed_in?
+  before_action :verify_lock, if: :signed_in?
+
   skip_authorization_check
 
   def new
@@ -10,25 +15,24 @@ class Verification::LetterController < ApplicationController
 
   def create
     @letter = Verification::Letter.new(user: current_user)
-    if @letter.save
-      redirect_to edit_letter_path, notice: t('verification.letter.create.flash.success')
-    else
-      flash.now.alert = t('verification.letter.create.alert.failure')
-      render :new
-    end
+    @letter.save
+    redirect_to letter_path
+  end
+
+  def show
   end
 
   def edit
-    @letter = Verification::Letter.new(user: current_user)
+    @letter = Verification::Letter.new
   end
 
   def update
-    @letter = Verification::Letter.new(letter_params.merge(user: current_user))
-    if @letter.verify?
+    @letter = Verification::Letter.new(letter_params.merge(user: current_user, verify: true))
+    if @letter.valid?
       current_user.update(verified_at: Time.now)
       redirect_to account_path, notice: t('verification.letter.update.flash.success')
     else
-      @error = t('verification.letter.update.error')
+      Lock.increase_tries(@letter.user) if @letter.user
       render :edit
     end
   end
@@ -36,7 +40,7 @@ class Verification::LetterController < ApplicationController
   private
 
     def letter_params
-      params.require(:letter).permit(:verification_code)
+      params.require(:verification_letter).permit(:verification_code, :email, :password)
     end
 
     def verify_phone!
@@ -44,4 +48,13 @@ class Verification::LetterController < ApplicationController
         redirect_to verified_user_path, alert: t('verification.letter.alert.unconfirmed_code')
       end
     end
+
+    def login_via_form
+      user = User.find_by email: letter_params[:email]
+      if user && user.valid_password?(letter_params[:password])
+        sign_in(user)
+      end
+    end
+
+
 end

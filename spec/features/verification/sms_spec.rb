@@ -17,7 +17,7 @@ feature 'SMS Verification' do
     fill_in 'sms_confirmation_code', with: user.sms_confirmation_code
     click_button 'Send'
 
-    expect(page).to have_content 'Correct code'
+    expect(page).to have_content 'Code correct'
   end
 
   scenario 'Errors on phone number' do
@@ -53,28 +53,28 @@ feature 'SMS Verification' do
 
     visit new_sms_path
 
-    expect(page).to have_content 'You have not yet confirmed your residence'
-    expect(URI.parse(current_url).path).to eq(new_residence_path)
+    expect(page).to have_content 'You have not yet confirmed your residency'
+    expect(current_path).to eq(new_residence_path)
   end
 
-  scenario '3 tries allowed' do
+  scenario '5 tries allowed' do
     user = create(:user, residence_verified_at: Time.now)
     login_as(user)
 
     visit new_sms_path
 
-    3.times do
+    5.times do
       fill_in 'sms_phone', with: "611111111"
       click_button 'Send'
-      click_link 'Click here to send the confirmation code again'
+      click_link 'Click here to send it again'
     end
 
-    expect(page).to have_content 'You have reached the maximum number of sms verification tries'
-    expect(URI.parse(current_url).path).to eq(account_path)
+    expect(page).to have_content "You have reached the maximum number of attempts. Please try again later."
+    expect(current_path).to eq(account_path)
 
     visit new_sms_path
-    expect(page).to have_content 'You have reached the maximum number of sms verification tries'
-    expect(URI.parse(current_url).path).to eq(account_path)
+    expect(page).to have_content "You have reached the maximum number of attempts. Please try again later."
+    expect(current_path).to eq(account_path)
   end
 
 end

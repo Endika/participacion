@@ -1,4 +1,8 @@
 class Admin::DebatesController < Admin::BaseController
+  include FeatureFlags
+
+  feature_flag :debates
+
   has_filters %w{without_confirmed_hide all with_confirmed_hide}, only: :index
 
   before_action :load_debate, only: [:confirm_hide, :restore]
@@ -14,6 +18,8 @@ class Admin::DebatesController < Admin::BaseController
 
   def restore
     @debate.restore
+    @debate.ignore_flag
+    Activity.log(current_user, :restore, @debate)
     redirect_to request.query_parameters.merge(action: :index)
   end
 

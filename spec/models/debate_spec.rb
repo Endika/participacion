@@ -1,3 +1,4 @@
+# coding: utf-8
 require 'rails_helper'
 
 describe Debate do
@@ -12,13 +13,25 @@ describe Debate do
     expect(debate).to_not be_valid
   end
 
-  it "should not be valid without a title" do
-    debate.title = nil
-    expect(debate).to_not be_valid
+  describe "#title" do
+    it "should not be valid without a title" do
+      debate.title = nil
+      expect(debate).to_not be_valid
+    end
+
+    it "should not be valid when very short" do
+      debate.title = "abc"
+      expect(debate).to_not be_valid
+    end
+
+    it "should not be valid when very long" do
+      debate.title = "a" * 81
+      expect(debate).to_not be_valid
+    end
   end
 
   describe "#description" do
-    it "should be mandatory" do
+    it "should not be valid without a description" do
       debate.description = nil
       expect(debate).to_not be_valid
     end
@@ -33,12 +46,34 @@ describe Debate do
       debate.description = "<script>alert('danger');</script>"
       expect(debate.description).to be_html_safe
     end
+
+    it "should not be valid when very short" do
+      debate.description = "abc"
+      expect(debate).to_not be_valid
+    end
+
+    it "should not be valid when very long" do
+      debate.description = "a" * 6001
+      expect(debate).to_not be_valid
+    end
   end
 
-  it "should sanitize the tag list" do
-    debate.tag_list = "user_id=1"
-    debate.valid?
-    expect(debate.tag_list).to eq(['user_id1'])
+  describe "#tag_list" do
+    it "should sanitize the tag list" do
+      debate.tag_list = "user_id=1"
+      debate.valid?
+      expect(debate.tag_list).to eq(['user_id1'])
+    end
+
+    it "should not be valid with a tag list of more than 6 elements" do
+      debate.tag_list = ["Hacienda", "Economía", "Medio Ambiente", "Corrupción", "Fiestas populares", "Prensa", "Huelgas"]
+      expect(debate).to_not be_valid
+    end
+
+    it "should be valid with a tag list of  6 elements" do
+      debate.tag_list = ["Hacienda", "Economía", "Medio Ambiente", "Corrupción", "Fiestas populares", "Prensa"]
+      expect(debate).to be_valid
+    end
   end
 
   it "should not be valid without accepting terms of service" do
@@ -48,28 +83,36 @@ describe Debate do
 
   describe "#editable?" do
     let(:debate) { create(:debate) }
+    before(:each) { Setting["max_votes_for_debate_edit"] = 3 }
 
     it "should be true if debate has no votes yet" do
       expect(debate.total_votes).to eq(0)
       expect(debate.editable?).to be true
     end
 
-    it "should be false if debate has votes" do
-      create(:vote, votable: debate)
-      expect(debate.total_votes).to eq(1)
+    it "should be true if debate has less than limit votes" do
+      create_list(:vote, 2, votable: debate)
+      expect(debate.total_votes).to eq(2)
+      expect(debate.editable?).to be true
+    end
+
+    it "should be false if debate has more than limit votes" do
+      create_list(:vote, 4, votable: debate)
+      expect(debate.total_votes).to eq(4)
       expect(debate.editable?).to be false
     end
   end
 
   describe "#editable_by?" do
     let(:debate) { create(:debate) }
+    before(:each) { Setting["max_votes_for_debate_edit"] = 1 }
 
     it "should be true if user is the author and debate is editable" do
       expect(debate.editable_by?(debate.author)).to be true
     end
 
     it "should be false if debate is not editable" do
-      create(:vote, votable: debate)
+      create_list(:vote, 2, votable: debate)
       expect(debate.editable_by?(debate.author)).to be false
     end
 
@@ -78,11 +121,47 @@ describe Debate do
     end
   end
 
+  describe "#votable_by?" do
+    let(:debate) { create(:debate) }
+
+    before(:each) do
+      Setting["max_ratio_anon_votes_on_debates"] = 50
+    end
+
+    it "should be true for level two verified users" do
+      user = create(:user, residence_verified_at: Time.now, confirmed_phone: "666333111")
+      expect(debate.votable_by?(user)).to be true
+    end
+
+    it "should be true for level three verified users" do
+      user = create(:user, verified_at: Time.now)
+      expect(debate.votable_by?(user)).to be true
+    end
+
+    it "should be true for anonymous users if allowed anonymous votes" do
+      debate.update(cached_anonymous_votes_total: 420, cached_votes_total: 1000)
+      user = create(:user)
+      expect(debate.votable_by?(user)).to be true
+    end
+
+    it "should be true for anonymous users if less than 100 votes" do
+      debate.update(cached_anonymous_votes_total: 90, cached_votes_total: 92)
+      user = create(:user)
+      expect(debate.votable_by?(user)).to be true
+    end
+
+    it "should be false for anonymous users if too many anonymous votes" do
+      debate.update(cached_anonymous_votes_total: 520, cached_votes_total: 1000)
+      user = create(:user)
+      expect(debate.votable_by?(user)).to be false
+    end
+  end
+
   describe "#register_vote" do
     let(:debate) { create(:debate) }
 
     before(:each) do
-      Setting.find_by(key: "max_ratio_anon_votes_on_debates").update(value: 50)
+      Setting["max_ratio_anon_votes_on_debates"] = 50
     end
 
     describe "from level two verified users" do
@@ -138,42 +217,6 @@ describe Debate do
     end
   end
 
-  describe "#votable_by?" do
-    let(:debate) { create(:debate) }
-
-    before(:each) do
-      Setting.find_by(key: "max_ratio_anon_votes_on_debates").update(value: 50)
-    end
-
-    it "should be true for level two verified users" do
-      user = create(:user, residence_verified_at: Time.now, confirmed_phone: "666333111")
-      expect(debate.votable_by?(user)).to be true
-    end
-
-    it "should be true for level three verified users" do
-      user = create(:user, verified_at: Time.now)
-      expect(debate.votable_by?(user)).to be true
-    end
-
-    it "should be true for anonymous users if allowed anonymous votes" do
-      debate.update(cached_anonymous_votes_total: 420, cached_votes_total: 1000)
-      user = create(:user)
-      expect(debate.votable_by?(user)).to be true
-    end
-
-    it "should be true for anonymous users if less than 100 votes" do
-      debate.update(cached_anonymous_votes_total: 90, cached_votes_total: 92)
-      user = create(:user)
-      expect(debate.votable_by?(user)).to be true
-    end
-
-    it "should be false for anonymous users if too many anonymous votes" do
-      debate.update(cached_anonymous_votes_total: 520, cached_votes_total: 1000)
-      user = create(:user)
-      expect(debate.votable_by?(user)).to be false
-    end
-  end
-
   describe '#anonymous_votes_ratio' do
     it "returns the percentage of anonymous votes of the total votes" do
       debate = create(:debate, cached_anonymous_votes_total: 25, cached_votes_total: 100)
@@ -191,7 +234,7 @@ describe Debate do
     end
 
     it "increases for debates with more comments" do
-      more_comments = create(:debate, :with_hot_score, created_at: now, comments_count: 10)
+      more_comments = create(:debate, :with_hot_score, created_at: now, comments_count: 25)
       less_comments = create(:debate, :with_hot_score, created_at: now, comments_count: 1)
       expect(more_comments.hot_score).to be > less_comments.hot_score
     end
@@ -209,7 +252,7 @@ describe Debate do
     end
 
     it "decays in older debates, even if they have more votes" do
-      older_more_voted = create(:debate, :with_hot_score, created_at: now - 2.days, cached_votes_total: 1000, cached_votes_up: 900)
+      older_more_voted = create(:debate, :with_hot_score, created_at: now - 5.days, cached_votes_total: 1000, cached_votes_up: 900)
       new_less_voted   = create(:debate, :with_hot_score, created_at: now, cached_votes_total: 10, cached_votes_up: 9)
       expect(new_less_voted.hot_score).to be > older_more_voted.hot_score
     end
@@ -232,40 +275,51 @@ describe Debate do
 
       it "increases with comments" do
         previous = debate.hot_score
-        Comment.create(user: create(:user), commentable: debate, body: 'foo')
-        expect(previous).to be < debate.hot_score
+        25.times{ Comment.create(user: create(:user), commentable: debate, body: 'foobarbaz') }
+        expect(previous).to be < debate.reload.hot_score
+      end
+    end
+  end
+
+  describe "#confidence_score" do
+
+    it "takes into account percentage of total votes and total_positive and total negative votes" do
+      debate = create(:debate, :with_confidence_score, cached_votes_up: 100, cached_votes_score: 100, cached_votes_total: 100)
+      expect(debate.confidence_score).to eq(10000)
+
+      debate = create(:debate, :with_confidence_score, cached_votes_up: 0, cached_votes_total: 100)
+      expect(debate.confidence_score).to eq(0)
+
+      debate = create(:debate, :with_confidence_score, cached_votes_up: 0, cached_votes_total: 0)
+      expect(debate.confidence_score).to eq(1)
+
+      debate = create(:debate, :with_confidence_score, cached_votes_up: 75, cached_votes_total: 100)
+      expect(debate.confidence_score).to eq(3750)
+
+      debate = create(:debate, :with_confidence_score, cached_votes_up: 750, cached_votes_total: 1000)
+      expect(debate.confidence_score).to eq(37500)
+
+      debate = create(:debate, :with_confidence_score, cached_votes_up: 10, cached_votes_total: 100)
+      expect(debate.confidence_score).to eq(-800)
+    end
+
+    describe 'actions which affect it' do
+      let(:debate) { create(:debate, :with_confidence_score) }
+
+      it "increases with like" do
+        previous = debate.confidence_score
+        5.times { debate.register_vote(create(:user), true) }
+        expect(previous).to be < debate.confidence_score
+      end
+
+      it "decreases with dislikes" do
+        debate.register_vote(create(:user), true)
+        previous = debate.confidence_score
+        3.times { debate.register_vote(create(:user), false) }
+        expect(previous).to be > debate.confidence_score
       end
     end
 
-  end
-
-  describe "self.search" do
-    it "find debates by title" do
-      debate1 = create(:debate, title: "Karpov vs Kasparov")
-      create(:debate, title: "Bird vs Magic")
-      search = Debate.search("Kasparov")
-      expect(search.size).to eq(1)
-      expect(search.first).to eq(debate1)
-    end
-
-    it "find debates by description" do
-      debate1 = create(:debate, description: "...chess masters...")
-      create(:debate, description: "...basket masters...")
-      search = Debate.search("chess")
-      expect(search.size).to eq(1)
-      expect(search.first).to eq(debate1)
-    end
-
-    it "find debates by title and description" do
-      create(:debate, title: "Karpov vs Kasparov", description: "...played like Gauss...")
-      create(:debate, title: "Euler vs Gauss", description: "...math masters...")
-      search = Debate.search("Gauss")
-      expect(search.size).to eq(2)
-    end
-
-    it "returns no results if no search term provided" do
-      expect(Debate.search("    ").size).to eq(0)
-    end
   end
 
   describe "cache" do
@@ -279,6 +333,11 @@ describe Debate do
     it "should expire cache when it has a new vote" do
       expect { create(:vote, votable: debate) }
       .to change { debate.updated_at }
+    end
+
+    it "should expire cache when it has a new flag" do
+      expect { create(:flag, flaggable: debate) }
+      .to change { debate.reload.updated_at }
     end
 
     it "should expire cache when it has a new tag" do
@@ -296,6 +355,11 @@ describe Debate do
       .to change { [debate.reload.updated_at, debate.author.updated_at] }
     end
 
+    it "should expire cache when the author is erased" do
+      expect { debate.author.erase }
+      .to change { [debate.reload.updated_at, debate.author.updated_at] }
+    end
+
     it "should expire cache when its author changes" do
       expect { debate.author.update(username: "Eva") }
       .to change { [debate.reload.updated_at, debate.author.updated_at] }
@@ -305,6 +369,340 @@ describe Debate do
       create(:organization, user: debate.author)
       expect { debate.author.organization.verify }
       .to change { [debate.reload.updated_at, debate.author.updated_at] }
+    end
+  end
+
+  describe "custom tag counters when hiding/restoring" do
+    it "decreases the tag counter when hiden, and increases it when restored" do
+      debate = create(:debate, tag_list: "foo")
+      tag = ActsAsTaggableOn::Tag.where(name: 'foo').first
+      expect(tag.debates_count).to eq(1)
+
+      debate.hide
+      expect(tag.reload.debates_count).to eq(0)
+
+      debate.restore
+      expect(tag.reload.debates_count).to eq(1)
+    end
+  end
+
+  describe "conflictive debates" do
+
+    it "should return true when it has more than 1 flag for 5 positive votes" do
+      debate.update(cached_votes_up: 4)
+      debate.update(flags_count: 1)
+      expect(debate).to be_conflictive
+
+      debate.update(cached_votes_up: 9)
+      debate.update(flags_count: 2)
+      expect(debate).to be_conflictive
+
+      debate.update(cached_votes_up: 14)
+      debate.update(flags_count: 3)
+      expect(debate).to be_conflictive
+
+      debate.update(cached_votes_up: 2)
+      debate.update(flags_count: 20)
+      expect(debate).to be_conflictive
+    end
+
+    it "should return false when it has less than or equal to 1 flag for 5 positive votes" do
+      debate.update(cached_votes_up: 5)
+      debate.update(flags_count: 1)
+      expect(debate).to_not be_conflictive
+
+      debate.update(cached_votes_up: 10)
+      debate.update(flags_count: 2)
+      expect(debate).to_not be_conflictive
+
+      debate.update(cached_votes_up: 100)
+      debate.update(flags_count: 2)
+      expect(debate).to_not be_conflictive
+    end
+
+    it "should return false when it has no flags" do
+      debate.update(flags_count: 0)
+      expect(debate).to_not be_conflictive
+    end
+
+    it "should return false when it has not votes up" do
+      debate.update(cached_votes_up: 0)
+      expect(debate).to_not be_conflictive
+    end
+
+  end
+
+  describe "search" do
+
+    context "attributes" do
+
+      xit "searches by title" do
+        debate = create(:debate, title: 'save the world')
+        results = Debate.search('save the world')
+        expect(results).to eq([debate])
+      end
+
+      xit "searches by description" do
+        debate = create(:debate, description: 'in order to save the world one must think about...')
+        results = Debate.search('one must think')
+        expect(results).to eq([debate])
+      end
+
+      xit "searches by author name" do
+        author = create(:user, username: 'Danny Trejo')
+        debate = create(:debate, author: author)
+        results = Debate.search('Danny')
+        expect(results).to eq([debate])
+      end
+
+      xit "searches by geozone" do
+        geozone = create(:geozone, name: 'California')
+        debate = create(:debate, geozone: geozone)
+        results = Debate.search('California')
+        expect(results).to eq([debate])
+      end
+
+    end
+
+    context "stemming" do
+
+      xit "searches word stems" do
+        debate = create(:debate, title: 'limpiar')
+
+        results = Debate.search('limpiará')
+        expect(results).to eq([debate])
+
+        results = Debate.search('limpiémos')
+        expect(results).to eq([debate])
+
+        results = Debate.search('limpió')
+        expect(results).to eq([debate])
+      end
+
+    end
+
+    context "accents" do
+
+      xit "searches with accents" do
+        debate = create(:debate, title: 'difusión')
+
+        results = Debate.search('difusion')
+        expect(results).to eq([debate])
+
+        debate2 = create(:debate, title: 'estadisticas')
+        results = Debate.search('estadísticas')
+        expect(results).to eq([debate2])
+      end
+
+    end
+
+    context "case" do
+
+      xit "searches case insensite" do
+        debate = create(:debate, title: 'SHOUT')
+
+        results = Debate.search('shout')
+        expect(results).to eq([debate])
+
+        debate2 = create(:debate, title: "scream")
+        results = Debate.search("SCREAM")
+        expect(results).to eq([debate2])
+      end
+
+    end
+
+    context "typos" do
+
+      xit "searches with typos" do
+        debate = create(:debate, title: 'difusión')
+
+        results = Debate.search('difuon')
+        expect(results).to eq([debate])
+
+        debate2 = create(:debate, title: 'desarrollo')
+        results = Debate.search('desarolo')
+        expect(results).to eq([debate2])
+      end
+
+    end
+
+    context "order" do
+
+      xit "orders by weight" do
+        debate_description = create(:debate,  description: 'stop corruption')
+        debate_title       = create(:debate,  title:       'stop corruption')
+
+        results = Debate.search('stop corruption')
+
+        expect(results.first).to eq(debate_title)
+        expect(results.second).to eq(debate_description)
+      end
+
+      xit "orders by weight and then votes" do
+        title_some_votes    = create(:debate, title: 'stop corruption', cached_votes_up: 5)
+        title_least_voted   = create(:debate, title: 'stop corruption', cached_votes_up: 2)
+        title_most_voted    = create(:debate, title: 'stop corruption', cached_votes_up: 10)
+        description_most_voted  = create(:debate, description: 'stop corruption', cached_votes_up: 10)
+
+        results = Debate.search('stop corruption')
+
+        expect(results.first).to eq(title_most_voted)
+        expect(results.second).to eq(description_most_voted)
+        expect(results.third).to eq(title_some_votes)
+        expect(results.fourth).to eq(title_least_voted)
+      end
+
+      xit "orders by weight and then votes and then created_at" do
+        newest = create(:debate, title: 'stop corruption', cached_votes_up: 5, created_at: Time.now)
+        oldest = create(:debate, title: 'stop corruption', cached_votes_up: 5, created_at: 1.month.ago)
+        old    = create(:debate, title: 'stop corruption', cached_votes_up: 5, created_at: 1.week.ago)
+
+        results = Debate.search('stop corruption')
+
+        expect(results.first).to eq(newest)
+        expect(results.second).to eq(old)
+        expect(results.third).to eq(oldest)
+      end
+
+    end
+
+    context "reorder" do
+
+      xit "should be able to reorder by hot_score after searching" do
+        lowest_score  = create(:debate,  title: 'stop corruption', cached_votes_up: 1)
+        highest_score = create(:debate,  title: 'stop corruption', cached_votes_up: 2)
+        average_score = create(:debate,  title: 'stop corruption', cached_votes_up: 3)
+
+        lowest_score.update_column(:hot_score, 1)
+        highest_score.update_column(:hot_score, 100)
+        average_score.update_column(:hot_score, 10)
+
+        results = Debate.search('stop corruption')
+
+        expect(results.first).to eq(average_score)
+        expect(results.second).to eq(highest_score)
+        expect(results.third).to eq(lowest_score)
+
+        results = results.sort_by_hot_score
+
+        expect(results.first).to eq(highest_score)
+        expect(results.second).to eq(average_score)
+        expect(results.third).to eq(lowest_score)
+      end
+
+      xit "should be able to reorder by confidence_score after searching" do
+        lowest_score  = create(:debate,  title: 'stop corruption', cached_votes_up: 1)
+        highest_score = create(:debate,  title: 'stop corruption', cached_votes_up: 2)
+        average_score = create(:debate,  title: 'stop corruption', cached_votes_up: 3)
+
+        lowest_score.update_column(:confidence_score, 1)
+        highest_score.update_column(:confidence_score, 100)
+        average_score.update_column(:confidence_score, 10)
+
+        results = Debate.search('stop corruption')
+
+        expect(results.first).to eq(average_score)
+        expect(results.second).to eq(highest_score)
+        expect(results.third).to eq(lowest_score)
+
+        results = results.sort_by_confidence_score
+
+        expect(results.first).to eq(highest_score)
+        expect(results.second).to eq(average_score)
+        expect(results.third).to eq(lowest_score)
+      end
+
+      xit "should be able to reorder by created_at after searching" do
+        recent  = create(:debate,  title: 'stop corruption', cached_votes_up: 1, created_at: 1.week.ago)
+        newest  = create(:debate,  title: 'stop corruption', cached_votes_up: 2, created_at: Time.now)
+        oldest  = create(:debate,  title: 'stop corruption', cached_votes_up: 3, created_at: 1.month.ago)
+
+        results = Debate.search('stop corruption')
+
+        expect(results.first).to eq(oldest)
+        expect(results.second).to eq(newest)
+        expect(results.third).to eq(recent)
+
+        results = results.sort_by_created_at
+
+        expect(results.first).to eq(newest)
+        expect(results.second).to eq(recent)
+        expect(results.third).to eq(oldest)
+      end
+
+      xit "should be able to reorder by most commented after searching" do
+        least_commented = create(:debate,  title: 'stop corruption',  cached_votes_up: 1, comments_count: 1)
+        most_commented  = create(:debate,  title: 'stop corruption',  cached_votes_up: 2, comments_count: 100)
+        some_comments   = create(:debate,  title: 'stop corruption',  cached_votes_up: 3, comments_count: 10)
+
+        results = Debate.search('stop corruption')
+
+        expect(results.first).to eq(some_comments)
+        expect(results.second).to eq(most_commented)
+        expect(results.third).to eq(least_commented)
+
+        results = results.sort_by_most_commented
+
+        expect(results.first).to eq(most_commented)
+        expect(results.second).to eq(some_comments)
+        expect(results.third).to eq(least_commented)
+      end
+
+    end
+
+    context "tags" do
+
+      xit "searches by tags" do
+        debate = create(:debate, tag_list: 'Latina')
+
+        results = Debate.search('Latina')
+        expect(results.first).to eq(debate)
+      end
+
+    end
+
+    context "no results" do
+
+      xit "no words match" do
+        debate = create(:debate, title: 'save world')
+
+        results = Debate.search('destroy planet')
+        expect(results).to eq([])
+      end
+
+      xit "too many typos" do
+        debate = create(:debate, title: 'fantastic')
+
+        results = Debate.search('frantac')
+        expect(results).to eq([])
+      end
+
+      xit "too much stemming" do
+        debate = create(:debate, title: 'reloj')
+
+        results = Debate.search('superrelojimetro')
+        expect(results).to eq([])
+      end
+
+      xit "empty" do
+        debate = create(:debate, title: 'great')
+
+        results = Debate.search('')
+        expect(results).to eq([])
+      end
+
+    end
+  end
+
+  describe "#last_week" do
+    it "should return debates created this week" do
+      debate = create(:debate)
+      expect(Debate.last_week.all).to include (debate)
+    end
+
+    it "should not show debates created more than a week ago" do
+      debate = create(:debate, created_at: 8.days.ago)
+      expect(Debate.last_week.all).to_not include (debate)
     end
   end
 

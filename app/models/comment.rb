@@ -1,28 +1,37 @@
 class Comment < ActiveRecord::Base
+  include Flaggable
+
   acts_as_paranoid column: :hidden_at
   include ActsAsParanoidAliases
   acts_as_votable
-  has_ancestry
+  has_ancestry touch: true
 
   attr_accessor :as_moderator, :as_administrator
 
   validates :body, presence: true
   validates :user, presence: true
-  validates_inclusion_of :commentable_type, in: ["Debate"]
+  validates_inclusion_of :commentable_type, in: ["Debate", "Proposal"]
+
+  validate :validate_body_length
 
   belongs_to :commentable, -> { with_hidden }, polymorphic: true, counter_cache: true
   belongs_to :user, -> { with_hidden }
 
-  has_many :flags, as: :flaggable
-
-  scope :recent, -> { order(id: :desc) }
-
-  scope :sort_for_moderation, -> { order(flags_count: :desc, updated_at: :desc) }
-  scope :pending_flag_review, -> { where(ignored_flag_at: nil, hidden_at: nil) }
-  scope :with_ignored_flag, -> { where("ignored_flag_at IS NOT NULL AND hidden_at IS NULL") }
-  scope :flagged, -> { where("flags_count > 0") }
+  before_save :calculate_confidence_score
 
   scope :for_render, -> { with_hidden.includes(user: :organization) }
+  scope :with_visible_author, -> { joins(:user).where("users.hidden_at IS NULL") }
+  scope :not_as_admin_or_moderator, -> { where("administrator_id IS NULL").where("moderator_id IS NULL")}
+  scope :sort_by_flags, -> { order(flags_count: :desc, updated_at: :desc) }
+
+  scope :sort_by_most_voted , -> { order(confidence_score: :desc, created_at: :desc) }
+  scope :sort_descendants_by_most_voted , -> { order(confidence_score: :desc, created_at: :asc) }
+
+  scope :sort_by_newest, -> { order(created_at: :desc) }
+  scope :sort_descendants_by_newest, -> { order(created_at: :desc) }
+
+  scope :sort_by_oldest, -> { order(created_at: :asc) }
+  scope :sort_descendants_by_oldest, -> { order(created_at: :asc) }
 
   after_create :call_after_commented
 
@@ -35,10 +44,6 @@ class Comment < ActiveRecord::Base
 
   def self.find_commentable(c_type, c_id)
     c_type.constantize.find(c_id)
-  end
-
-  def debate
-    commentable if commentable.class == Debate
   end
 
   def author_id
@@ -65,14 +70,6 @@ class Comment < ActiveRecord::Base
     cached_votes_down
   end
 
-  def ignored_flag?
-    ignored_flag_at.present?
-  end
-
-  def ignore_flag
-    update(ignored_flag_at: Time.now)
-  end
-
   def as_administrator?
     administrator_id.present?
   end
@@ -82,7 +79,11 @@ class Comment < ActiveRecord::Base
   end
 
   def after_hide
-    commentable_type.constantize.reset_counters(commentable_id, :comments)
+    commentable_type.constantize.with_hidden.reset_counters(commentable_id, :comments)
+  end
+
+  def after_restore
+    commentable_type.constantize.with_hidden.reset_counters(commentable_id, :comments)
   end
 
   def reply?
@@ -92,5 +93,23 @@ class Comment < ActiveRecord::Base
   def call_after_commented
     self.commentable.try(:after_commented)
   end
+
+  def self.body_max_length
+    1000
+  end
+
+  def calculate_confidence_score
+    self.confidence_score = ScoreCalculator.confidence_score(cached_votes_total,
+                                                             cached_votes_up)
+  end
+
+  private
+
+    def validate_body_length
+      validator = ActiveModel::Validations::LengthValidator.new(
+        attributes: :body,
+        maximum: Comment.body_max_length)
+      validator.validate(self)
+    end
 
 end

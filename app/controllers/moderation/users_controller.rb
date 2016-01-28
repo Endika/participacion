@@ -1,15 +1,33 @@
 class Moderation::UsersController < Moderation::BaseController
 
-  def hide
-    user = User.find(params[:id])
-    debates_ids = Debate.where(author_id: user.id).pluck(:id)
-    comments_ids = Comment.where(user_id: user.id).pluck(:id)
+  before_action :load_users, only: :index
 
-    user.hide
-    Debate.hide_all debates_ids
-    Comment.hide_all comments_ids
+  load_and_authorize_resource
+
+  def index
+  end
+
+  def hide_in_moderation_screen
+    block_user
+
+    redirect_to request.query_parameters.merge(action: :index), notice: I18n.t('moderation.users.notice_hide')
+  end
+
+  def hide
+    block_user
 
     redirect_to debates_path
+  end
+
+  private
+
+  def load_users
+    @users = User.with_hidden.search(params[:name_or_email]).page(params[:page]).for_render
+  end
+
+  def block_user
+    @user.block
+    Activity.log(current_user, :block, @user)
   end
 
 end

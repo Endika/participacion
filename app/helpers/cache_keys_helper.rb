@@ -10,7 +10,7 @@ module CacheKeysHelper
 
     if user_signed_in?
       user_status += ":signed"
-      user_status += ":verified" if current_user.verified_at.present?
+      user_status += ":verified" if current_user.level_two_or_three_verified?
       user_status += ":org" if current_user.organization?
       user_status += ":admin" if current_user.administrator?
       user_status += ":moderator" if current_user.moderator?
@@ -20,6 +20,11 @@ module CacheKeysHelper
     end
 
     user_status
+  end
+
+  # when commentable id and type are used but no need to update cache on updated_at changes
+  def commentable_cache_key(commentable)
+    "#{commentable.class.name}-#{commentable.id}"
   end
 
 end

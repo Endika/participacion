@@ -20,28 +20,24 @@ class Verification::Sms
     return false unless self.valid?
     update_user_phone_information
     send_sms
-    increase_sms_tries
+    Lock.increase_tries(user)
   end
 
   def update_user_phone_information
-    user.update(unconfirmed_phone: phone, sms_confirmation_code: four_digit_code)
+    user.update(unconfirmed_phone: phone, sms_confirmation_code: generate_confirmation_code)
   end
 
   def send_sms
     SMSApi.new.sms_deliver(user.unconfirmed_phone, user.sms_confirmation_code)
   end
 
-  def increase_sms_tries
-    user.update(sms_confirmation_tries: user.sms_confirmation_tries += 1)
-  end
-
-  def verify?
+  def verified?
     user.sms_confirmation_code == confirmation_code
   end
 
   private
 
-    def four_digit_code
+    def generate_confirmation_code
       rand.to_s[2..5]
     end
 end

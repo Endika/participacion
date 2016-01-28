@@ -3,21 +3,20 @@ lock '3.4.0'
 
 def deploysecret(key)
   @deploy_secrets_yml ||= YAML.load_file('config/deploy-secrets.yml')[fetch(:stage).to_s]
-  @deploy_secrets_yml[key.to_s]
+  @deploy_secrets_yml.fetch(key.to_s, 'undefined')
 end
-
 
 set :rails_env, fetch(:stage)
 set :rvm_ruby_version, '2.2.3'
 set :rvm_type, :user
 
-set :application, 'participacion'
+set :application, 'consul'
 set :full_app_name, deploysecret(:full_app_name)
 
 set :server_name, deploysecret(:server_name)
-#set :repo_url, 'git@github.com:AyuntamientoMadrid/participacion.git'
+#set :repo_url, 'git@github.com:consul/consul.git'
 # If ssh access is restricted, probably you need to use https access
-set :repo_url, 'https://github.com/AyuntamientoMadrid/participacion.git'
+set :repo_url, 'https://github.com/consul/consul.git'
 
 set :scm, :git
 set :revision, `git rev-parse --short #{fetch(:branch)}`.strip
@@ -47,6 +46,8 @@ set(:config_files, %w(
   sidekiq.yml
 ))
 
+set :whenever_roles, -> { :cron }
+
 namespace :deploy do
   # Check right version of deploy branch
   # before :deploy, "deploy:check_revision"
@@ -56,7 +57,6 @@ namespace :deploy do
   # Custom compile and rsync of assets - works, but it is very slow
   #after 'deploy:symlink:shared', 'deploy:compile_assets_locally'
 
-  after :finishing, 'deploy:beta_testers'
   after :finishing, 'deploy:cleanup'
   # Restart unicorn
   after 'deploy:publishing', 'deploy:restart'

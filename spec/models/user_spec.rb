@@ -66,9 +66,9 @@ describe User do
   end
 
   describe 'preferences' do
-    describe 'email_on_debate_comment' do
+    describe 'email_on_comment' do
       it 'should be false by default' do
-        expect(subject.email_on_debate_comment).to eq(false)
+        expect(subject.email_on_comment).to eq(false)
       end
     end
 
@@ -77,24 +77,10 @@ describe User do
         expect(subject.email_on_comment_reply).to eq(false)
       end
     end
-  end
 
-  describe 'OmniAuth' do
-    describe '#email_provided?' do
-      it "is false if the email matchs was temporarely assigned by the OmniAuth process" do
-        subject.email = 'omniauth@participacion-ABCD-twitter.com'
-        expect(subject.email_provided?).to eq(false)
-      end
-
-      it "is true if the email is not omniauth-like" do
-        subject.email = 'manuelacarmena@example.com'
-        expect(subject.email_provided?).to eq(true)
-      end
-
-      it "is true if the user's real email is pending to be confirmed" do
-        subject.email = 'omniauth@participacion-ABCD-twitter.com'
-        subject.unconfirmed_email = 'manuelacarmena@example.com'
-        expect(subject.email_provided?).to eq(true)
+    describe 'subscription_to_website_newsletter' do
+      it 'should be false by default' do
+        expect(subject.newsletter).to eq(false)
       end
     end
   end
@@ -161,11 +147,12 @@ describe User do
   end
 
   describe "organization_attributes" do
-    before(:each) { subject.organization_attributes = {name: 'org'} }
+    before(:each) { subject.organization_attributes = {name: 'org', responsible_name: 'julia'} }
 
     it "triggers the creation of an associated organization" do
       expect(subject.organization).to be
       expect(subject.organization.name).to eq('org')
+      expect(subject.organization.responsible_name).to eq('julia')
     end
 
     it "deactivates the validation of username, and activates the validation of organization" do
@@ -239,6 +226,27 @@ describe User do
     end
   end
 
+  describe "has_official_email" do
+    it "checks if the mail address has the officials domain" do
+      # We will use empleados.madrid.es as the officials' domain
+      # Subdomains are also accepted
+
+      Setting['email_domain_for_officials'] = 'officials.madrid.es'
+      user1 = create(:user, email: "john@officials.madrid.es", confirmed_at: Time.now)
+      user2 = create(:user, email: "john@yes.officials.madrid.es", confirmed_at: Time.now)
+      user3 = create(:user, email: "john@unofficials.madrid.es", confirmed_at: Time.now)
+      user4 = create(:user, email: "john@example.org", confirmed_at: Time.now)
+
+      expect(user1.has_official_email?).to eq(true)
+      expect(user2.has_official_email?).to eq(true)
+      expect(user3.has_official_email?).to eq(false)
+      expect(user4.has_official_email?).to eq(false)
+
+      # We reset the officials' domain setting
+      Setting.find_by(key: 'email_domain_for_officials').update(value: '')
+    end
+  end
+
   describe "self.search" do
     it "find users by email" do
       user1 = create(:user, email: "larry@madrid.es")
@@ -261,49 +269,8 @@ describe User do
     end
   end
 
-  describe "verification levels" do
-    it "residence_verified? is true only if residence_verified_at" do
-      user = create(:user, residence_verified_at: Time.now)
-      expect(user.residence_verified?).to eq(true)
-
-      user = create(:user, residence_verified_at: nil)
-      expect(user.residence_verified?).to eq(false)
-    end
-
-    it "sms_verified? is true only if confirmed_phone" do
-      user = create(:user, confirmed_phone: "123456789")
-      expect(user.sms_verified?).to eq(true)
-
-      user = create(:user, confirmed_phone: nil)
-      expect(user.sms_verified?).to eq(false)
-    end
-
-    it "level_two_verified? is true only if residence_verified_at and confirmed_phone" do
-      user = create(:user, confirmed_phone: "123456789", residence_verified_at: Time.now)
-      expect(user.level_two_verified?).to eq(true)
-
-      user = create(:user, confirmed_phone: nil, residence_verified_at: Time.now)
-      expect(user.level_two_verified?).to eq(false)
-
-      user = create(:user, confirmed_phone: "123456789", residence_verified_at: nil)
-      expect(user.level_two_verified?).to eq(false)
-    end
-
-    it "level_three_verified? is true only if verified_at" do
-      user = create(:user, verified_at: Time.now)
-      expect(user.level_three_verified?).to eq(true)
-
-      user = create(:user, verified_at: nil)
-      expect(user.level_three_verified?).to eq(false)
-    end
-
-    it "unverified? is true only if not level_three_verified and not level_two_verified" do
-      user = create(:user, verified_at: nil, confirmed_phone: nil)
-      expect(user.unverified?).to eq(true)
-
-      user = create(:user, verified_at: Time.now, confirmed_phone: "123456789", residence_verified_at: Time.now)
-      expect(user.unverified?).to eq(false)
-    end
+  describe "verification" do
+    it_behaves_like "verifiable"
   end
 
   describe "cache" do
@@ -325,6 +292,53 @@ describe User do
       .to change { user.reload.updated_at}
     end
 
+  end
+
+  describe "document_number" do
+    it "should upcase document number" do
+      user = User.new({document_number: "x1234567z"})
+      user.valid?
+      expect(user.document_number).to eq("X1234567Z")
+    end
+
+    it "should remove all characters except numbers and letters" do
+      user = User.new({document_number: " 12.345.678 - B"})
+      user.valid?
+      expect(user.document_number).to eq("12345678B")
+    end
+
+  end
+
+  describe "#erase" do
+    it "anonymizes a user and marks him as hidden" do
+      user = create(:user,
+                     username: "manolo",
+                     unconfirmed_email: "a@a.com",
+                     document_number: "1234",
+                     phone_number: "5678",
+                     encrypted_password: "foobar",
+                     confirmation_token: "token1",
+                     reset_password_token: "token2",
+                     email_verification_token: "token3")
+      user.erase('a test')
+      user.reload
+
+      expect(user.erase_reason).to eq('a test')
+      expect(user.erased_at).to be
+
+      expect(user.username).to be_nil
+
+      expect(user.email).to be_nil
+      expect(user.unconfirmed_email).to be_nil
+      expect(user.document_number).to be_nil
+      expect(user.phone_number).to be_nil
+
+      expect(user.encrypted_password).to be_empty
+
+      expect(user.confirmation_token).to be_nil
+      expect(user.reset_password_token).to be_nil
+      expect(user.email_verification_token).to be_nil
+    end
   end
 
 end

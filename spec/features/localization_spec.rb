@@ -6,7 +6,7 @@ feature 'Localization' do
     visit root_path(locale: :es)
     visit root_path(locale: :klingon)
 
-    expect(page).to have_text('La ciudad que quieres, será la ciudad que quieras.')
+    expect(page).to have_text('La ciudad que quieres será la ciudad que quieras.')
   end
 
   scenario 'Available locales appear in the locale switcher' do
@@ -34,13 +34,10 @@ feature 'Localization' do
   end
 
   scenario 'Locale switcher not present if only one locale' do
-    initial_locales = I18n.available_locales
-    I18n.available_locales = [:en]
+    expect(I18n).to receive(:available_locales).and_return([:en])
 
     visit '/'
     expect(page).to_not have_content('Language')
     expect(page).to_not have_css('div.locale')
-
-    I18n.available_locales = initial_locales
   end
 end

@@ -17,43 +17,45 @@ describe 'Verification::Letter' do
       expect(letter).to_not be_valid
     end
 
-    it "should not be valid without an address" do
-      letter.address = {}
-      expect(letter).to_not be_valid
-    end
-
   end
 
   describe "save" do
 
-    before(:each) do
-      letter = Verification::Letter.new(user: user)
-      letter.save
-      user.reload
-    end
-
     it "should update letter_requested" do
-      expect(user.letter_requested_at).to be
+      letter = build(:verification_letter)
+      letter.save
+      expect(letter.user.letter_requested_at).to be
     end
 
-    it "should update address" do
-      expect(user.address).to have_attributes({
-        postal_code:   "28013",
-        street:        "ALCALÁ",
-        street_type:   "CALLE",
-        number:        "1",
-        number_type:   "NUM",
-        letter:        "B",
-        portal:        "1",
-        stairway:      "4",
-        floor:         "PB",
-        door:          "DR",
-        km:            "0",
-        neighbourhood: "JUSTICIA",
-        district:      "CENTRO"
-      })
+  end
+
+  describe "#verify" do
+
+    let(:letter) { build(:verification_letter, verify: true) }
+
+    it "incorrect code" do
+      letter.user.update(letter_verification_code: "123456")
+      letter.verification_code = "5555"
+
+      expect(letter.valid?).to eq(false)
+      expect(letter.errors[:verification_code].first).to eq("Verification code incorrect")
     end
 
+    it "correct code" do
+      letter.user.update(letter_verification_code: "123456")
+      letter.verification_code = "123456"
+
+      expect(letter.valid?).to eq(true)
+      expect(letter.errors).to be_empty
+    end
+
+    it "ignores trailing zeros" do
+      letter.user.update(letter_verification_code: "003456")
+      letter.verification_code = "3456"
+
+      expect(letter.valid?).to eq(true)
+      expect(letter.errors).to be_empty
+    end
   end
 
 end

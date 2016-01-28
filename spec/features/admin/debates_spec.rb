@@ -2,6 +2,14 @@ require 'rails_helper'
 
 feature 'Admin debates' do
 
+  scenario 'Disabled with a feature flag' do
+    Setting['feature.debates'] = nil
+    admin = create(:administrator)
+    login_as(admin.user)
+
+    expect{ visit admin_debates_path }.to raise_exception(FeatureFlags::FeatureDisabled)
+  end
+
   background do
     admin = create(:administrator)
     login_as(admin.user)
@@ -16,6 +24,7 @@ feature 'Admin debates' do
     expect(page).to_not have_content(debate.title)
 
     expect(debate.reload).to_not be_hidden
+    expect(debate).to be_ignored_flag
   end
 
   scenario 'Confirm hide' do
